@@ -75,9 +75,10 @@ die folgenden Variablen enthalten:
 ### Tor Hidden Service
 
 Setze `ENABLE_TOR=1`, um beim Start automatisch einen Hidden Service für die
-Admin-Oberfläche einzurichten. Der Control-Port wird über
-`TOR_CONTROL_HOST` und `TOR_CONTROL_PORT` angesprochen, das Passwort steht in
-`TOR_CONTROL_PASS`. Standardmäßig nutzt der Dienst den Port aus `ADMIN_PORT`.
+Admin-Oberfläche einzurichten. Voraussetzung ist eine laufende Tor-Instanz mit
+aktiviertem Control-Port. Dieser wird über `TOR_CONTROL_HOST` und
+`TOR_CONTROL_PORT` angesprochen, das Passwort steht in `TOR_CONTROL_PASS`.
+Standardmäßig nutzt der Dienst den Port aus `ADMIN_PORT`.
 
 Die aktuelle Onion-Adresse wird nach dem Start im Terminal angezeigt und kann
 über die Route `/tor` in der GUI geändert werden.
@@ -163,7 +164,7 @@ The systemd services load their configuration from the `.env` file. It must cont
 
 ### Tor hidden service
 
-Set `ENABLE_TOR=1` in the `.env` file to automatically create a hidden service for the admin GUI. Configure the control port using `TOR_CONTROL_HOST` and `TOR_CONTROL_PORT`; the password is taken from `TOR_CONTROL_PASS`. The service uses `ADMIN_PORT` by default.
+Set `ENABLE_TOR=1` in the `.env` file to automatically create a hidden service for the admin GUI. Make sure a Tor daemon is running with the control port enabled. Configure the port using `TOR_CONTROL_HOST` and `TOR_CONTROL_PORT`; the password is taken from `TOR_CONTROL_PASS`. The service uses `ADMIN_PORT` by default.
 
 The current onion address is printed at startup and can be changed via the `/tor` route in the GUI.
 
