@@ -40,6 +40,13 @@ Auf allen Plattformen kannst du alternativ das Python-Skript verwenden:
 python setup.py
 ```
 
+Sollte `systemctl --user` nicht verfügbar sein, starte Bot und GUI manuell:
+
+```bash
+python bot.py
+python admin_app.py
+```
+
 
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
@@ -99,6 +106,13 @@ On any platform you can alternatively use the Python script:
 
 ```bash
 python setup.py
+```
+
+If `systemctl --user` is not available, start bot and GUI manually:
+
+```bash
+python bot.py
+python admin_app.py
 ```
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
