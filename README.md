@@ -12,6 +12,7 @@ diese Einstellung für den Nutzer.
 * Admin-Login (Benutzername und Passwort über `ADMIN_USER` und `ADMIN_PASS`).
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * GUI läuft lokal auf Port 8000.
+* Neue Route `/tor` ermöglicht das Ändern der Tor-Einstellungen.
 
 ## Setup
 
@@ -64,12 +65,16 @@ die folgenden Variablen enthalten:
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
 * `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
-* `TOR_CONTROL_PORT` – optionaler ControlPort von Tor (Standard: `9051`)
-* `TOR_PASSWORD` – Passwort für den Tor-ControlPort
-* `TOR_SERVICE_PORT` – Port der Hidden Service-Adresse (Standard: `80`)
+
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
 Diese Datei darf **nicht** ins Repository eingecheckt werden.
+
+### Sicherheitshinweise
+
+Wird `ADMIN_HOST` auf `0.0.0.0` gesetzt oder der Tor-Dienst aktiviert, ist die
+Admin-Oberfläche von außen erreichbar. Verwende ein starkes Passwort und
+beschränke den Zugriff nach Möglichkeit weiter.
 
 ## Tests
 
@@ -92,6 +97,7 @@ This project contains a simple Telegram bot and an admin interface for managing 
 * Admin login using the username and password from `ADMIN_USER` and `ADMIN_PASS`.
 * Manage products with name, price and description.
 * The GUI runs locally on port 8000.
+* New `/tor` route lets you modify Tor settings.
 
 ## Setup
 
@@ -135,9 +141,7 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
-* `TOR_CONTROL_PORT` – optional Tor ControlPort (default: `9051`)
-* `TOR_PASSWORD` – password for the Tor ControlPort
-* `TOR_SERVICE_PORT` – port exposed by the hidden service (default: `80`)
+
 
 You can store these values in a `.env` file. This file must **not** be committed to the repository.
 
