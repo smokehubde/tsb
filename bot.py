@@ -6,8 +6,9 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import F
 
-from sqlalchemy.orm import Session
-from db import engine, User
+from db import create_app, SessionLocal, User
+
+create_app()
 
 
 class LangStates(StatesGroup):
@@ -27,7 +28,7 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
-    with Session(engine) as session:
+    with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
         if not user or not user.language:
             kb = ReplyKeyboardMarkup(keyboard=[
@@ -43,7 +44,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
 @dp.message(LangStates.choose)
 async def set_language(message: types.Message, state: FSMContext):
     lang = "de" if message.text.lower().startswith("de") else "en"
-    with Session(engine) as session:
+    with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
         if not user:
             user = User(telegram_id=message.from_user.id, language=lang)
