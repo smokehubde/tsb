@@ -10,12 +10,26 @@ source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
 pip install aiogram flask flask_sqlalchemy
 
+if [ -z "$BOT_TOKEN" ]; then
+    read -p "BOT_TOKEN: " BOT_TOKEN
+fi
+if [ -z "$ADMIN_USER" ]; then
+    read -p "Admin username: " ADMIN_USER
+fi
+if [ -z "$ADMIN_PASS" ]; then
+    read -p "Admin password: " ADMIN_PASS
+fi
+if [ -z "$SECRET_KEY" ]; then
+    read -p "Flask SECRET_KEY: " SECRET_KEY
+fi
+
 echo "[Unit]" > bot.service
 cat >> bot.service <<SERVICE
 Description=Telegram Shop Bot
 After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
+Environment=BOT_TOKEN=$BOT_TOKEN
 ExecStart=$VENV_DIR/bin/python $REPO_DIR/bot.py
 Restart=always
 [Install]
@@ -29,6 +43,9 @@ Description=Flask Admin GUI
 After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
+Environment=ADMIN_USER=$ADMIN_USER
+Environment=ADMIN_PASS=$ADMIN_PASS
+Environment=SECRET_KEY=$SECRET_KEY
 ExecStart=$VENV_DIR/bin/python $REPO_DIR/admin_app.py
 Restart=always
 [Install]

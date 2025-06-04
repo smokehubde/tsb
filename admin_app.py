@@ -1,11 +1,9 @@
+import os
 from flask import request, redirect, url_for, render_template_string, session
+
 from db import create_app, db, Product
 
 app = create_app()
-
-ADMIN_USER = 'admin'
-ADMIN_PASS = 'q12wq12w'
-
 
 def login_required(func):
     from functools import wraps
@@ -21,8 +19,8 @@ def login_required(func):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if (request.form.get('username') == ADMIN_USER and
-                request.form.get('password') == ADMIN_PASS):
+        if (request.form.get('username') == os.getenv('ADMIN_USER') and
+                request.form.get('password') == os.getenv('ADMIN_PASS')):
             session['logged_in'] = True
             return redirect(url_for('product_list'))
     return render_template_string('''
