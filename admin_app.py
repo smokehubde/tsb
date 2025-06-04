@@ -1,5 +1,5 @@
 import os
-from flask import request, redirect, url_for, render_template_string, session
+from flask import request, redirect, url_for, render_template, session
 
 from db import create_app, db, Product
 
@@ -27,13 +27,7 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('product_list'))
         error = "Invalid credentials"
-    return render_template_string('''
-        {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
-        <form method="post">
-            <input name="username" placeholder="Username">
-            <input name="password" type="password" placeholder="Password">
-            <button type="submit">Login</button>
-        </form>''', error=error)
+    return render_template('login.html', error=error)
 
 
 @app.route('/logout')
@@ -47,18 +41,7 @@ def logout():
 @login_required
 def product_list():
     products = Product.query.all()
-    return render_template_string('''
-        <a href="{{ url_for('add_product') }}">Neues Produkt</a>
-        <ul>
-        {% for p in products %}
-            <li>
-                {{ p.name }} - {{ p.price }} € - {{ p.description }}
-                <a href="{{ url_for('edit_product', pid=p.id) }}">Edit</a>
-                <a href="{{ url_for('delete_product', pid=p.id) }}">Delete</a>
-            </li>
-        {% endfor %}
-        </ul>
-    ''', products=products)
+    return render_template('product_list.html', products=products)
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -71,14 +54,7 @@ def add_product():
         db.session.add(Product(name=name, price=price, description=desc))
         db.session.commit()
         return redirect(url_for('product_list'))
-    return render_template_string('''
-        <form method="post">
-            <input name="name" placeholder="Name">
-            <input name="price" placeholder="Price" type="number" step="0.01">
-            <textarea name="description" placeholder="Beschreibung"></textarea>
-            <button type="submit">Save</button>
-        </form>
-    ''')
+    return render_template('add_product.html')
 
 
 @app.route('/edit/<int:pid>', methods=['GET', 'POST'])
@@ -91,14 +67,7 @@ def edit_product(pid):
         product.description = request.form['description']
         db.session.commit()
         return redirect(url_for('product_list'))
-    return render_template_string('''
-        <form method="post">
-            <input name="name" value="{{ p.name }}">
-            <input name="price" type="number" step="0.01" value="{{ p.price }}">
-            <textarea name="description">{{ p.description }}</textarea>
-            <button type="submit">Save</button>
-        </form>
-    ''', p=product)
+    return render_template('edit_product.html', p=product)
 
 
 @app.route('/delete/<int:pid>')
