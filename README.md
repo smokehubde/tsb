@@ -72,6 +72,10 @@ Diese Datei darf **nicht** ins Repository eingecheckt werden.
 
 Die Unit-Tests werden mit pytest ausgeführt. Nach dem Installieren der Abhängigkeiten kannst du sie direkt mit `pytest` ausführen.
 
+## Lizenz
+
+Dieses Projekt steht unter der MIT-Lizenz. Siehe [LICENSE](LICENSE) fuer Details.
+
 ---
 
 # Telegram Shop Bot (English)
@@ -134,3 +138,7 @@ You can store these values in a `.env` file. This file must **not** be committed
 ## Tests
 
 Unit tests are executed using pytest. After installing the dependencies you can run them directly with `pytest`.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
