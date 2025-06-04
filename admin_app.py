@@ -7,6 +7,7 @@ app = create_app()
 ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
 
+
 def login_required(func):
     from functools import wraps
 
@@ -94,7 +95,8 @@ def edit_product(pid):
     return render_template_string('''
         <form method="post">
             <input name="name" value="{{ p.name }}">
-            <input name="price" type="number" step="0.01" value="{{ p.price }}">
+            <input name="price" type="number" step="0.01"
+                   value="{{ p.price }}">
             <textarea name="description">{{ p.description }}</textarea>
             <button type="submit">Save</button>
         </form>

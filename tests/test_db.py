@@ -1,9 +1,8 @@
 import sys
+import importlib
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
-
-import importlib
 
 
 def test_create_product(tmp_path, monkeypatch):

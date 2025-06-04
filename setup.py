@@ -24,7 +24,12 @@ def create_venv():
 
 def install_deps(pip_exe):
     subprocess.check_call([str(pip_exe), "install", "--upgrade", "pip"])
-    subprocess.check_call([str(pip_exe), "install", "-r", str(REPO_DIR / "requirements.txt")])
+    subprocess.check_call([
+        str(pip_exe),
+        "install",
+        "-r",
+        str(REPO_DIR / "requirements.txt"),
+    ])
 
 
 def prompt_env(var):
@@ -55,7 +60,10 @@ def write_env_file(env):
 def create_services(python_exe, env):
     # Only Linux systemd services
     if not sys.platform.startswith("linux"):
-        print("Systemd services are only created on Linux. Start the scripts manually:")
+        print(
+            "Systemd services are only created on Linux. "
+            "Start the scripts manually:"
+        )
         print(f"  {python_exe} bot.py")
         print(f"  {python_exe} admin_app.py")
         return

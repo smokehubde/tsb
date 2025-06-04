@@ -71,6 +71,7 @@ Diese Datei darf **nicht** ins Repository eingecheckt werden.
 ## Tests
 
 Die Unit-Tests werden mit pytest ausgeführt. Nach dem Installieren der Abhängigkeiten kannst du sie direkt mit `pytest` ausführen.
+Für einen Stil-Check kannst du optional `flake8` ausführen.
 
 ## Lizenz
 
@@ -138,6 +139,7 @@ You can store these values in a `.env` file. This file must **not** be committed
 ## Tests
 
 Unit tests are executed using pytest. After installing the dependencies you can run them directly with `pytest`.
+Run `flake8` locally if you want to check the code style.
 
 ## License
 

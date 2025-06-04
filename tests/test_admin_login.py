@@ -20,7 +20,10 @@ def test_admin_login(tmp_path, monkeypatch):
     app = admin_app.app
     client = app.test_client()
 
-    resp = client.post('/login', data={'username': 'admin', 'password': 'pass'})
+    resp = client.post(
+        '/login',
+        data={'username': 'admin', 'password': 'pass'},
+    )
     assert resp.status_code == 302
     assert resp.headers['Location'].endswith('/')
     with client.session_transaction() as sess:
