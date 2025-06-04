@@ -64,6 +64,9 @@ die folgenden Variablen enthalten:
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
 * `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
+* `TOR_CONTROL_PORT` – optionaler ControlPort von Tor (Standard: `9051`)
+* `TOR_PASSWORD` – Passwort für den Tor-ControlPort
+* `TOR_SERVICE_PORT` – Port der Hidden Service-Adresse (Standard: `80`)
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
 Diese Datei darf **nicht** ins Repository eingecheckt werden.
@@ -132,6 +135,9 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `TOR_CONTROL_PORT` – optional Tor ControlPort (default: `9051`)
+* `TOR_PASSWORD` – password for the Tor ControlPort
+* `TOR_SERVICE_PORT` – port exposed by the hidden service (default: `80`)
 
 You can store these values in a `.env` file. This file must **not** be committed to the repository.
 
