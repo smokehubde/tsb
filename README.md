@@ -70,6 +70,10 @@ die folgenden Variablen enthalten:
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
 * `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
+* `WEBHOOK_URL` – HTTPS-URL für Telegram-Webhooks (optional)
+* `WEBHOOK_HOST` – Hostname/IP für den Webhook-Server (Standard: `0.0.0.0`)
+* `WEBHOOK_PORT` – Port für den Webhook-Server (Standard: `8080`)
+* `WEBHOOK_PATH` – Pfad der Webhook-Route (Standard: `/webhook`)
 
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
@@ -150,6 +154,10 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `WEBHOOK_URL` – HTTPS URL for Telegram webhooks (optional)
+* `WEBHOOK_HOST` – Hostname/IP for the webhook server (default: `0.0.0.0`)
+* `WEBHOOK_PORT` – Port for the webhook server (default: `8080`)
+* `WEBHOOK_PATH` – Path for the webhook route (default: `/webhook`)
 * `ENABLE_TOR` – set to `1` to expose the admin GUI via Tor
 * `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
 * `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)

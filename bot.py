@@ -3,9 +3,12 @@ from pathlib import Path
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
+import asyncio
+from aiohttp import web
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import F
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from db import create_app, SessionLocal, User
 
@@ -84,8 +87,29 @@ async def set_language(message: types.Message, state: FSMContext):
 
 
 def main():
+    """Start the bot either via webhook or long polling."""
     create_app()
-    dp.run_polling(bot)
+    webhook_url = os.getenv("WEBHOOK_URL")
+    if webhook_url:
+        webhook_host = os.getenv("WEBHOOK_HOST", "0.0.0.0")
+        webhook_port = int(os.getenv("WEBHOOK_PORT", "8080"))
+        webhook_path = os.getenv("WEBHOOK_PATH", "/webhook")
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(bot.set_webhook(webhook_url))
+
+        app = web.Application()
+        SimpleRequestHandler(dp, bot).register(app, path=webhook_path)
+        setup_application(app, dp, bot=bot)
+
+        async def on_shutdown(app: web.Application):
+            await bot.delete_webhook()
+
+        app.on_shutdown.append(on_shutdown)
+        web.run_app(app, host=webhook_host, port=webhook_port, loop=loop)
+    else:
+        dp.run_polling(bot)
 
 
 if __name__ == "__main__":
