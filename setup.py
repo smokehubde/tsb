@@ -61,18 +61,14 @@ def create_services(python_exe, env):
         return
 
     try:
-        subprocess.check_call([
-            "systemctl",
-            "--user",
-            "--version",
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print("systemd not available. Start the scripts manually:")
-        print(f"  {python_exe} bot.py")
-        print(f"  {python_exe} admin_app.py")
-        return
+        subprocess.check_call(
+            ["systemctl", "--user", "--version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
-    (REPO_DIR / "bot.service").write_text(f"""[Unit]
+        (REPO_DIR / "bot.service").write_text(
+            f"""[Unit]
 Description=Telegram Shop Bot
 After=network.target
 [Service]
@@ -82,9 +78,11 @@ ExecStart={python_exe} {REPO_DIR / 'bot.py'}
 Restart=always
 [Install]
 WantedBy=multi-user.target
-""")
+"""
+        )
 
-    (REPO_DIR / "gui.service").write_text(f"""[Unit]
+        (REPO_DIR / "gui.service").write_text(
+            f"""[Unit]
 Description=Flask Admin GUI
 After=network.target
 [Service]
@@ -94,17 +92,25 @@ ExecStart={python_exe} {REPO_DIR / 'admin_app.py'}
 Restart=always
 [Install]
 WantedBy=multi-user.target
-""")
+"""
+        )
 
-    subprocess.check_call(["systemctl", "--user", "daemon-reload"])
-    subprocess.check_call([
-        "systemctl",
-        "--user",
-        "enable",
-        "--now",
-        str(REPO_DIR / "bot.service"),
-        str(REPO_DIR / "gui.service"),
-    ])
+        subprocess.check_call(["systemctl", "--user", "daemon-reload"])
+        subprocess.check_call(
+            [
+                "systemctl",
+                "--user",
+                "enable",
+                "--now",
+                str(REPO_DIR / "bot.service"),
+                str(REPO_DIR / "gui.service"),
+            ]
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("systemd not available or command failed. Start the scripts manually:")
+        print(f"  {python_exe} bot.py")
+        print(f"  {python_exe} admin_app.py")
+        return
 
 
 def main():
