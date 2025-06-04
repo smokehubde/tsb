@@ -73,7 +73,7 @@ WantedBy=multi-user.target
 SERVICE
 
 systemctl --user daemon-reload
-systemctl --user enable --now bot.service gui.service
+systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
 
 echo "Telegram Bot started. Configure it via Telegram."
 echo "Admin GUI available at http://localhost:8000" 
