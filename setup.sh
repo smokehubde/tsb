@@ -8,10 +8,13 @@ python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
 pip install --upgrade pip
-pip install aiogram flask flask_sqlalchemy
+pip install -r "$REPO_DIR/requirements.txt"
 
-echo "[Unit]" > bot.service
-cat >> bot.service <<SERVICE
+SYSTEMD_USER_DIR="$HOME/.config/systemd/user"
+mkdir -p "$SYSTEMD_USER_DIR"
+
+echo "[Unit]" > "$SYSTEMD_USER_DIR/bot.service"
+cat >> "$SYSTEMD_USER_DIR/bot.service" <<SERVICE
 Description=Telegram Shop Bot
 After=network.target
 [Service]
@@ -23,8 +26,8 @@ WantedBy=multi-user.target
 SERVICE
 
 
-echo "[Unit]" > gui.service
-cat >> gui.service <<SERVICE
+echo "[Unit]" > "$SYSTEMD_USER_DIR/gui.service"
+cat >> "$SYSTEMD_USER_DIR/gui.service" <<SERVICE
 Description=Flask Admin GUI
 After=network.target
 [Service]
