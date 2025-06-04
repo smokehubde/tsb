@@ -85,7 +85,14 @@ WantedBy=multi-user.target
 """)
 
     subprocess.check_call(["systemctl", "--user", "daemon-reload"])
-    subprocess.check_call(["systemctl", "--user", "enable", "--now", "bot.service", "gui.service"])
+    subprocess.check_call([
+        "systemctl",
+        "--user",
+        "enable",
+        "--now",
+        str(REPO_DIR / "bot.service"),
+        str(REPO_DIR / "gui.service"),
+    ])
 
 
 def main():

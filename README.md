@@ -24,6 +24,9 @@ Entwicklungsumgebung:
 Beide Skripte legen eine virtuelle Umgebung im Ordner `venv` an, installieren
 die Abhängigkeiten aus `requirements.txt`, schreiben die benötigten Variablen in
 eine `.env`-Datei und erzeugen auf Linux die systemd-Dienste für Bot und GUI.
+Die Dienste werden dabei mit absoluten Pfaden aktiviert:
+`systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"`.
+Zuvor wird automatisch `systemctl --user daemon-reload` ausgeführt.
 
 Unter Unix-Systemen führst du typischerweise das Shell-Skript aus:
 
@@ -83,7 +86,8 @@ The project provides two equivalent scripts for setting up the development envir
 * `setup.sh` – Bash script for Linux/macOS.
 * `setup.py` – Python variant that also works on Windows.
 
-Both scripts create a virtual environment in the `venv` folder, install the dependencies from `requirements.txt`, write the required variables to a `.env` file and on Linux create the systemd services for bot and GUI.
+Both scripts create a virtual environment in the `venv` folder, install the dependencies from `requirements.txt`, write the required variables to a `.env` file and on Linux create the systemd services for bot and GUI. The services are enabled using absolute paths:
+`systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"`. `systemctl --user daemon-reload` is executed automatically before enabling them.
 
 On Unix systems you typically run the shell script:
 
