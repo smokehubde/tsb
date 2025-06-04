@@ -27,9 +27,38 @@ class User(db.Model):
 
 
 def get_secret_key():
+    """Return the Flask secret key.
+
+    The function first checks the ``SECRET_KEY`` environment variable. If it is
+    not set, it tries to read the value from the ``.env`` file whose location is
+    defined by the ``ENV_FILE`` environment variable (falling back to
+    ``./.env``). When the key is still missing a new random key is generated and
+    appended to the ``.env`` file so subsequent runs use the same value.
+    """
+
     key = os.getenv("SECRET_KEY")
-    if not key:
-        raise RuntimeError("SECRET_KEY environment variable missing")
+    if key:
+        return key
+
+    env_path = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env"))
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                if line.startswith("SECRET_KEY="):
+                    key = line.strip().split("=", 1)[1]
+                    os.environ["SECRET_KEY"] = key
+                    return key
+
+    import secrets
+
+    key = secrets.token_urlsafe(16)
+    os.environ["SECRET_KEY"] = key
+    try:
+        with open(env_path, "a") as f:
+            f.write(f"SECRET_KEY={key}\n")
+    except OSError:
+        # If the file cannot be written we still return the generated key
+        pass
     return key
 
 
