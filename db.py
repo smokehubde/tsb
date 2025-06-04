@@ -3,7 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 from flask import Flask
 
-DATABASE_URL = "sqlite:///db.sqlite3"
+# Allow overriding the database via environment variable.
+# Falls back to the local SQLite file if not provided.
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
 
 db = SQLAlchemy()
 SessionLocal = sessionmaker()
