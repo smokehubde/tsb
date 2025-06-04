@@ -38,6 +38,8 @@ die folgenden Variablen enthalten:
 * `ADMIN_USER` – Benutzername für das Admin-Login
 * `ADMIN_PASS` – Passwort für das Admin-Login
 * `SECRET_KEY` – Flask-`SECRET_KEY` für die Web-Oberfläche
+* `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
+* `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
 Diese Datei darf **nicht** ins Repository eingecheckt werden.

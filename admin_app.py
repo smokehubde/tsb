@@ -4,6 +4,8 @@ from flask import request, redirect, url_for, render_template_string, session
 from db import create_app, db, Product
 
 app = create_app()
+ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
+ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
 
 def login_required(func):
     from functools import wraps
@@ -106,7 +108,7 @@ def delete_product(pid):
 
 
 def main():
-    app.run(port=8000)
+    app.run(host=ADMIN_HOST, port=ADMIN_PORT)
 
 
 if __name__ == '__main__':
