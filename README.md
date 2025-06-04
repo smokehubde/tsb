@@ -24,6 +24,14 @@ oder macOS.
 ./setup.sh
 ```
 
+Alternativ kann das Setup komplett in Python ausgeführt werden:
+
+```bash
+python setup.py
+```
+Dieses Skript legt ebenfalls eine virtuelle Umgebung an, speichert die
+benötigten Variablen in `.env` und erzeugt die systemd-Dienste.
+
 
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
