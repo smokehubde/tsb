@@ -1,5 +1,6 @@
 import os
-from flask import request, redirect, url_for, render_template_string, session
+from flask import request, redirect, url_for, render_template_string, session, jsonify
+from stem.control import Controller
 
 from db import create_app, db, Product
 
@@ -108,6 +109,21 @@ def delete_product(pid):
     db.session.delete(product)
     db.session.commit()
     return redirect(url_for('product_list'))
+
+
+@app.route('/tor')
+def tor_status():
+    port = int(os.getenv('TOR_CONTROL_PORT', '9051'))
+    password = os.getenv('TOR_CONTROL_PASS', '')
+    try:
+        with Controller.from_port(port=port) as controller:
+            if password:
+                controller.authenticate(password=password)
+            else:
+                controller.authenticate()
+        return jsonify({'status': 'ok'})
+    except Exception as exc:
+        return jsonify({'status': 'error', 'message': str(exc)}), 500
 
 
 def main():
