@@ -80,7 +80,25 @@ def delete_product(pid):
 
 
 def main():
-    app.run(host=ADMIN_HOST, port=ADMIN_PORT)
+    """Start the admin web app and optionally expose it as a Tor hidden service."""
+    onion_service = None
+    ctx = None
+    if os.getenv("TOR_CONTROL_PORT"):
+        try:
+            from tor_service import hidden_service
+            ctx = hidden_service(ADMIN_PORT)
+            onion_service = ctx.__enter__()
+            print(f"Tor hidden service available at http://{onion_service}")
+        except Exception as exc:  # pragma: no cover - Tor optional in tests
+            print(f"Failed to start Tor hidden service: {exc}")
+            onion_service = None
+            ctx = None
+
+    try:
+        app.run(host=ADMIN_HOST, port=ADMIN_PORT)
+    finally:
+        if onion_service is not None and ctx is not None:
+            ctx.__exit__(None, None, None)
 
 
 if __name__ == '__main__':
