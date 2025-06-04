@@ -1,3 +1,4 @@
+import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -35,10 +36,17 @@ from flask import Flask
 db = SQLAlchemy()
 
 
+def get_secret_key():
+    key = os.getenv("SECRET_KEY")
+    if not key:
+        raise RuntimeError("SECRET_KEY environment variable missing")
+    return key
+
+
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-    app.config['SECRET_KEY'] = 'change-me'
+    app.config['SECRET_KEY'] = get_secret_key()
     db.init_app(app)
     with app.app_context():
         init_db()
