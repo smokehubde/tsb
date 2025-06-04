@@ -8,12 +8,26 @@ from flask import (
     render_template_string,
 )
 
-from db import create_app, db, Product
-
-app = create_app()
 ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
 ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env"))
+
+
+def load_env(path: str | None = None) -> None:
+    """Load variables from a .env file into ``os.environ`` if not already set."""
+    env_path = path or ENV_FILE
+    if not os.path.exists(env_path):
+        return
+    with open(env_path) as f:
+        for line in f:
+            if "=" in line and not line.strip().startswith("#"):
+                key, value = line.strip().split("=", 1)
+                os.environ.setdefault(key, value)
+
+from db import create_app, db, Product
+
+load_env()
+app = create_app()
 
 
 def update_env_var(name: str, value: str) -> None:
