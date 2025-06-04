@@ -8,8 +8,6 @@ from aiogram import F
 
 from db import create_app, SessionLocal, User
 
-create_app()
-
 
 class LangStates(StatesGroup):
     choose = State()
@@ -58,6 +56,7 @@ async def set_language(message: types.Message, state: FSMContext):
 
 
 def main():
+    create_app()
     dp.run_polling(bot)
 
 
