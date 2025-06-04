@@ -1,0 +1,22 @@
+# Virtual environments
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables
+.env
+
+# Editor directories
+.vscode/
+.idea/
+
+# Systemd service files
+*.service
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
