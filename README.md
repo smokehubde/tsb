@@ -57,3 +57,7 @@ die folgenden Variablen enthalten:
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
 Diese Datei darf **nicht** ins Repository eingecheckt werden.
+
+## Tests
+
+Die Unit-Tests werden mit pytest ausgeführt. Nach dem Installieren der Abhängigkeiten kannst du sie direkt mit `pytest` ausführen.
