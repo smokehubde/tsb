@@ -61,3 +61,58 @@ Diese Datei darf **nicht** ins Repository eingecheckt werden.
 ## Tests
 
 Die Unit-Tests werden mit pytest ausgeführt. Nach dem Installieren der Abhängigkeiten kannst du sie direkt mit `pytest` ausführen.
+
+---
+
+# Telegram Shop Bot (English)
+
+This project contains a simple Telegram bot and an admin interface for managing products. The bot uses aiogram 3.x and the admin GUI is built with Flask.
+
+## Features
+
+* On `/start` the bot asks for the language (German or English) and stores the setting for the user.
+* The first menu shows "Wähle ein Produkt" or "Choose a product" depending on the chosen language.
+* Admin login using the username and password from `ADMIN_USER` and `ADMIN_PASS`.
+* Manage products with name, price and description.
+* The GUI runs locally on port 8000.
+
+## Setup
+
+The project provides two equivalent scripts for setting up the development environment:
+
+* `setup.sh` – Bash script for Linux/macOS.
+* `setup.py` – Python variant that also works on Windows.
+
+Both scripts create a virtual environment in the `venv` folder, install the dependencies from `requirements.txt`, write the required variables to a `.env` file and on Linux create the systemd services for bot and GUI.
+
+On Unix systems you typically run the shell script:
+
+```bash
+./setup.sh
+```
+
+On any platform you can alternatively use the Python script:
+
+```bash
+python setup.py
+```
+
+After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
+
+## Environment Variables
+
+The systemd services load their configuration from the `.env` file. It must contain the following variables:
+
+* `BOT_TOKEN` – Telegram token for the bot
+* `ADMIN_USER` – Username for the admin login
+* `ADMIN_PASS` – Password for the admin login
+* `SECRET_KEY` – Flask `SECRET_KEY` for the web interface
+* `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
+* `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
+* `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+
+You can store these values in a `.env` file. This file must **not** be committed to the repository.
+
+## Tests
+
+Unit tests are executed using pytest. After installing the dependencies you can run them directly with `pytest`.
