@@ -50,6 +50,12 @@ Kommando `python3`.
    python3 bot.py
    python3 admin_app.py
    ```
+   Wenn du das Setup-Skript übersprungen hast oder die Programme außerhalb
+   des Verzeichnisses `venv` ausführst, installiere zunächst die Abhängigkeiten
+   mit:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 Die Skripte legen dabei eine virtuelle Umgebung unter `venv` an,
 installieren die Abhängigkeiten und schreiben deine Angaben in die
@@ -150,6 +156,11 @@ Python 3 is required. On some systems the executable is named `python3`.
    ```bash
    python3 bot.py
    python3 admin_app.py
+   ```
+   If you skipped the setup script or run the programs outside the `venv`
+   directory, install the dependencies beforehand using:
+   ```bash
+   pip install -r requirements.txt
    ```
    The scripts create a virtual environment under `venv`, install the dependencies and write your values to `.env`. On Linux, systemd units are enabled immediately using:
    ```bash
