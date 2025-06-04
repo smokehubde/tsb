@@ -12,6 +12,7 @@ diese Einstellung für den Nutzer.
 * Admin-Login (Benutzername und Passwort über `ADMIN_USER` und `ADMIN_PASS`).
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * GUI läuft lokal auf Port 8000.
+* Neue Route `/tor` ermöglicht das Ändern der Tor-Einstellungen.
 
 ## Setup
 
@@ -64,9 +65,31 @@ die folgenden Variablen enthalten:
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
 * `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
+* `ENABLE_TOR` – `1` richtet beim Start automatisch einen Tor-Hidden-Service ein
+* `TOR_CONTROL_HOST` – Host des Tor-Control-Ports (Standard: `127.0.0.1`)
+* `TOR_CONTROL_PORT` – Port des Tor-Control-Ports (Standard: `9051`)
+* `TOR_CONTROL_PASS` – Passwort für den Zugriff auf den Control-Port
+
+
+
+### Tor Hidden Service
+
+Setze `ENABLE_TOR=1`, um beim Start automatisch einen Hidden Service für die
+Admin-Oberfläche einzurichten. Der Control-Port wird über
+`TOR_CONTROL_HOST` und `TOR_CONTROL_PORT` angesprochen, das Passwort steht in
+`TOR_CONTROL_PASS`. Standardmäßig nutzt der Dienst den Port aus `ADMIN_PORT`.
+
+Die aktuelle Onion-Adresse wird nach dem Start im Terminal angezeigt und kann
+über die Route `/tor` in der GUI geändert werden.
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
 Diese Datei darf **nicht** ins Repository eingecheckt werden.
+
+### Sicherheitshinweise
+
+Wird `ADMIN_HOST` auf `0.0.0.0` gesetzt oder der Tor-Dienst aktiviert, ist die
+Admin-Oberfläche von außen erreichbar. Verwende ein starkes Passwort und
+beschränke den Zugriff nach Möglichkeit weiter.
 
 ## Tests
 
@@ -89,6 +112,7 @@ This project contains a simple Telegram bot and an admin interface for managing 
 * Admin login using the username and password from `ADMIN_USER` and `ADMIN_PASS`.
 * Manage products with name, price and description.
 * The GUI runs locally on port 8000.
+* New `/tor` route lets you modify Tor settings.
 
 ## Setup
 
@@ -132,6 +156,21 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `ENABLE_TOR` – `1` enables automatic hidden service setup
+* `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
+* `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
+* `TOR_CONTROL_PASS` – password for accessing the control port
+
+### Tor hidden service
+
+Set `ENABLE_TOR=1` in the `.env` file to automatically create a hidden service for the admin GUI. Configure the control port using `TOR_CONTROL_HOST` and `TOR_CONTROL_PORT`; the password is taken from `TOR_CONTROL_PASS`. The service uses `ADMIN_PORT` by default.
+
+The current onion address is printed at startup and can be changed via the `/tor` route in the GUI.
+
+### Security considerations
+
+When `ADMIN_HOST` is set to `0.0.0.0` or the Tor service is enabled the admin interface is publicly reachable. Use a strong password and restrict access whenever possible.
+
 
 You can store these values in a `.env` file. This file must **not** be committed to the repository.
 

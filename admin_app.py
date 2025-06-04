@@ -1,11 +1,17 @@
 import os
 from flask import request, redirect, url_for, render_template_string, session
+from tor_service import TorService
 
 from db import create_app, db, Product
 
 app = create_app()
 ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
+tor = TorService()
+if tor.enable:
+    onion = tor.setup(ADMIN_PORT)
+    if onion:
+        print(f"Tor hidden service available at {onion}")
 
 def login_required(func):
     from functools import wraps
@@ -108,6 +114,23 @@ def delete_product(pid):
     db.session.delete(product)
     db.session.commit()
     return redirect(url_for('product_list'))
+
+
+@app.route('/tor', methods=['GET', 'POST'])
+@login_required
+def tor_settings():
+    if not tor.enable:
+        return render_template_string("<p>Tor service disabled.</p><a href='{{ url_for('product_list') }}'>Back</a>")
+    msg = None
+    if request.method == 'POST':
+        tor.regenerate(ADMIN_PORT)
+        msg = 'New hidden service created.'
+    return render_template_string('''
+        <p>Current onion address: {{ onion }}</p>
+        <form method="post"><button type="submit">Regenerate</button></form>
+        <a href="{{ url_for('product_list') }}">Back</a>
+        {% if msg %}<p>{{ msg }}</p>{% endif %}
+    ''', onion=tor.onion, msg=msg)
 
 
 def main():
