@@ -60,6 +60,18 @@ def create_services(python_exe, env):
         print(f"  {python_exe} admin_app.py")
         return
 
+    try:
+        subprocess.check_call([
+            "systemctl",
+            "--user",
+            "--version",
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("systemd not available. Start the scripts manually:")
+        print(f"  {python_exe} bot.py")
+        print(f"  {python_exe} admin_app.py")
+        return
+
     (REPO_DIR / "bot.service").write_text(f"""[Unit]
 Description=Telegram Shop Bot
 After=network.target
