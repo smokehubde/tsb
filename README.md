@@ -17,13 +17,23 @@ diese Einstellung für den Nutzer.
 
 Das Skript `setup.sh` richtet eine Python-`venv` ein, installiert die
 Abhängigkeiten und erstellt systemd-Dienste für Bot und GUI.
+Es setzt eine Unix-Shell (bash) voraus und funktioniert daher unter Linux
+oder macOS.
 
 ```bash
 ./setup.sh
 ```
 
-Das Skript fragt nach `BOT_TOKEN`, `ADMIN_USER`, `ADMIN_PASS` und `SECRET_KEY`,
-falls diese Variablen nicht bereits in der Umgebung gesetzt sind.
+Windows-Nutzer können stattdessen die plattformübergreifende Variante
+`setup.py` verwenden:
+
+```bash
+python setup.py
+```
+
+Beide Skripte fragen nach `BOT_TOKEN`, `ADMIN_USER`, `ADMIN_PASS` und
+`SECRET_KEY`, falls diese Variablen nicht bereits in der Umgebung gesetzt
+sind.
 
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
