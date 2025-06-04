@@ -24,6 +24,14 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     telegram_id = db.Column(db.Integer, unique=True)
     language = db.Column(db.String(10))
+    country = db.Column(db.String(50))
+
+
+class ShippingCost(db.Model):
+    __tablename__ = "shipping_costs"
+    id = db.Column(db.Integer, primary_key=True)
+    country = db.Column(db.String(50), unique=True)
+    cost = db.Column(db.Float)
 
 
 def get_secret_key():
