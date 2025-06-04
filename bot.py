@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -8,6 +9,8 @@ from aiogram import F
 
 from sqlalchemy.orm import Session
 from db import engine, User
+
+load_dotenv()
 
 
 class LangStates(StatesGroup):

@@ -1,10 +1,14 @@
+import os
+from dotenv import load_dotenv
 from flask import request, redirect, url_for, render_template_string, session
 from db import create_app, db, Product
 
+load_dotenv()
+
 app = create_app()
 
-ADMIN_USER = 'admin'
-ADMIN_PASS = 'q12wq12w'
+ADMIN_USER = os.getenv('ADMIN_USER', 'admin')
+ADMIN_PASS = os.getenv('ADMIN_PASS', 'q12wq12w')
 
 
 def login_required(func):

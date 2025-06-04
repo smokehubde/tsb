@@ -9,19 +9,23 @@ Admin-GUI basiert auf Flask.
 * Bot fragt bei `/start` die Sprache ab (Deutsch oder Englisch) und speichert
 diese Einstellung für den Nutzer.
 * Erste Menü-Ausgabe "Wähle ein Produkt" bzw. "Choose a product" je nach Sprache.
-* Admin-Login (Benutzer `admin`, Passwort `q12wq12w`).
+* Admin-Login (Benutzer und Passwort werden über Umgebungsvariablen
+  `ADMIN_USER` und `ADMIN_PASS` gesetzt; Standard ist `admin`/`q12wq12w`).
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * GUI läuft lokal auf Port 8000.
 
 ## Setup
 
 Das Skript `setup.sh` richtet eine Python-`venv` ein, installiert die
-Abhängigkeiten und erstellt systemd-Dienste für Bot und GUI.
+Abhängigkeiten und versucht unter Linux systemd-Dienste für Bot und GUI
+anzulegen. Auf anderen Plattformen erhält man Startbefehle, um die
+Anwendungen manuell zu starten.
 
 ```bash
 ./setup.sh
 ```
 
-Nach dem Start ist der Bot über Telegram erreichbar (Token per
-`BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
+Vor dem Start können Sie die Datei `.env.example` nach `.env` kopieren und die
+benötigten Werte wie `BOT_TOKEN` oder Datenbank-URL anpassen. Nach der
+Installation ist der Bot über Telegram erreichbar und die Admin-GUI unter
 [http://localhost:8000](http://localhost:8000).
