@@ -1,10 +1,13 @@
+import os
 from flask import request, redirect, url_for, render_template_string, session
 from db import create_app, db, Product
 
 app = create_app()
 
-ADMIN_USER = 'admin'
-ADMIN_PASS = 'q12wq12w'
+# Allow overriding admin credentials via environment variables so unit files can
+# reference an environment file instead of hard coding secrets.
+ADMIN_USER = os.getenv('ADMIN_USER', 'admin')
+ADMIN_PASS = os.getenv('ADMIN_PASS', 'q12wq12w')
 
 
 def login_required(func):
