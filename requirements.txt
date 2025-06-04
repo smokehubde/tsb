@@ -1,5 +1,6 @@
 aiogram>=3,<4
 Flask
 flask_sqlalchemy
+stem
 
 pytest

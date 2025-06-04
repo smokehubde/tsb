@@ -1,11 +1,31 @@
 import os
-from flask import request, redirect, url_for, render_template_string, session
+from flask import request, redirect, url_for, render_template, session
 
 from db import create_app, db, Product
 
 app = create_app()
 ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
+ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env"))
+
+
+def update_env_var(name: str, value: str) -> None:
+    """Persist a variable to the .env file and os.environ."""
+    os.environ[name] = value
+    lines = []
+    if os.path.exists(ENV_FILE):
+        with open(ENV_FILE) as f:
+            lines = f.readlines()
+    found = False
+    for i, line in enumerate(lines):
+        if line.startswith(f"{name}="):
+            lines[i] = f"{name}={value}\n"
+            found = True
+            break
+    if not found:
+        lines.append(f"{name}={value}\n")
+    with open(ENV_FILE, "w") as f:
+        f.writelines(lines)
 
 def login_required(func):
     from functools import wraps
@@ -27,13 +47,7 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('product_list'))
         error = "Invalid credentials"
-    return render_template_string('''
-        {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
-        <form method="post">
-            <input name="username" placeholder="Username">
-            <input name="password" type="password" placeholder="Password">
-            <button type="submit">Login</button>
-        </form>''', error=error)
+    return render_template('login.html', error=error)
 
 
 @app.route('/logout')
@@ -47,18 +61,7 @@ def logout():
 @login_required
 def product_list():
     products = Product.query.all()
-    return render_template_string('''
-        <a href="{{ url_for('add_product') }}">Neues Produkt</a>
-        <ul>
-        {% for p in products %}
-            <li>
-                {{ p.name }} - {{ p.price }} € - {{ p.description }}
-                <a href="{{ url_for('edit_product', pid=p.id) }}">Edit</a>
-                <a href="{{ url_for('delete_product', pid=p.id) }}">Delete</a>
-            </li>
-        {% endfor %}
-        </ul>
-    ''', products=products)
+    return render_template('product_list.html', products=products)
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -71,14 +74,7 @@ def add_product():
         db.session.add(Product(name=name, price=price, description=desc))
         db.session.commit()
         return redirect(url_for('product_list'))
-    return render_template_string('''
-        <form method="post">
-            <input name="name" placeholder="Name">
-            <input name="price" placeholder="Price" type="number" step="0.01">
-            <textarea name="description" placeholder="Beschreibung"></textarea>
-            <button type="submit">Save</button>
-        </form>
-    ''')
+    return render_template('add_product.html')
 
 
 @app.route('/edit/<int:pid>', methods=['GET', 'POST'])
@@ -91,14 +87,7 @@ def edit_product(pid):
         product.description = request.form['description']
         db.session.commit()
         return redirect(url_for('product_list'))
-    return render_template_string('''
-        <form method="post">
-            <input name="name" value="{{ p.name }}">
-            <input name="price" type="number" step="0.01" value="{{ p.price }}">
-            <textarea name="description">{{ p.description }}</textarea>
-            <button type="submit">Save</button>
-        </form>
-    ''', p=product)
+    return render_template('edit_product.html', p=product)
 
 
 @app.route('/delete/<int:pid>')
@@ -110,8 +99,60 @@ def delete_product(pid):
     return redirect(url_for('product_list'))
 
 
+@app.route('/tor', methods=['GET', 'POST'])
+@login_required
+def tor_settings():
+    """Display and update Tor connection settings."""
+    message = None
+    host = os.getenv('TOR_HOST', '127.0.0.1')
+    port = os.getenv('TOR_PORT', '9050')
+    if request.method == 'POST':
+        host = request.form.get('host', '').strip()
+        port_input = request.form.get('port', '').strip()
+        if not host:
+            message = 'Host required'
+        else:
+            try:
+                port_val = int(port_input)
+                if not 1 <= port_val <= 65535:
+                    raise ValueError
+            except ValueError:
+                message = 'Invalid port'
+            else:
+                update_env_var('TOR_HOST', host)
+                update_env_var('TOR_PORT', str(port_val))
+                port = str(port_val)
+                message = 'Settings updated'
+    return render_template_string('''
+        {% if message %}<p>{{ message }}</p>{% endif %}
+        <form method="post">
+            <input name="host" value="{{ host }}" placeholder="Host">
+            <input name="port" type="number" value="{{ port }}" placeholder="Port">
+            <button type="submit">Save</button>
+        </form>
+    ''', host=host, port=port, message=message)
+
+
 def main():
-    app.run(host=ADMIN_HOST, port=ADMIN_PORT)
+    """Start the admin web app and optionally expose it as a Tor hidden service."""
+    onion_service = None
+    ctx = None
+    if os.getenv("TOR_CONTROL_PORT"):
+        try:
+            from tor_service import hidden_service
+            ctx = hidden_service(ADMIN_PORT)
+            onion_service = ctx.__enter__()
+            print(f"Tor hidden service available at http://{onion_service}")
+        except Exception as exc:  # pragma: no cover - Tor optional in tests
+            print(f"Failed to start Tor hidden service: {exc}")
+            onion_service = None
+            ctx = None
+
+    try:
+        app.run(host=ADMIN_HOST, port=ADMIN_PORT)
+    finally:
+        if onion_service is not None and ctx is not None:
+            ctx.__exit__(None, None, None)
 
 
 if __name__ == '__main__':
