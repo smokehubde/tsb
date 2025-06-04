@@ -13,8 +13,10 @@ def test_tor_settings(tmp_path, monkeypatch):
     monkeypatch.setenv('SECRET_KEY', 'test')
     monkeypatch.setenv('ADMIN_USER', 'admin')
     monkeypatch.setenv('ADMIN_PASS', 'pass')
-    monkeypatch.setenv('TOR_HOST', 'localhost')
-    monkeypatch.setenv('TOR_PORT', '9050')
+    monkeypatch.setenv('ENABLE_TOR', '0')
+    monkeypatch.setenv('TOR_CONTROL_HOST', 'localhost')
+    monkeypatch.setenv('TOR_CONTROL_PORT', '9051')
+    monkeypatch.setenv('TOR_CONTROL_PASS', 'passw')
 
     if 'db' in importlib.sys.modules:
         importlib.reload(importlib.import_module('db'))
@@ -33,10 +35,14 @@ def test_tor_settings(tmp_path, monkeypatch):
     assert b'localhost' in resp.data
 
     # update settings
-    resp = client.post('/tor', data={'host': '127.0.0.1', 'port': '9051'})
+    resp = client.post('/tor', data={'enabled': 'on', 'host': '127.0.0.1', 'port': '9052', 'password': 'secret'})
     assert b'Settings updated' in resp.data
-    assert os.environ['TOR_HOST'] == '127.0.0.1'
-    assert os.environ['TOR_PORT'] == '9051'
+    assert os.environ['ENABLE_TOR'] == '1'
+    assert os.environ['TOR_CONTROL_HOST'] == '127.0.0.1'
+    assert os.environ['TOR_CONTROL_PORT'] == '9052'
+    assert os.environ['TOR_CONTROL_PASS'] == 'secret'
     saved = env_file.read_text()
-    assert 'TOR_HOST=127.0.0.1' in saved
-    assert 'TOR_PORT=9051' in saved
+    assert 'ENABLE_TOR=1' in saved
+    assert 'TOR_CONTROL_HOST=127.0.0.1' in saved
+    assert 'TOR_CONTROL_PORT=9052' in saved
+    assert 'TOR_CONTROL_PASS=secret' in saved

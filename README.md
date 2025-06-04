@@ -12,7 +12,9 @@ diese Einstellung für den Nutzer.
 * Admin-Login (Benutzername und Passwort über `ADMIN_USER` und `ADMIN_PASS`).
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * GUI läuft lokal auf Port 8000.
-* Neue Route `/tor` ermöglicht das Ändern der Tor-Einstellungen.
+* Neue Route `/tor` ermöglicht das Steuern des Tor-Dienstes über die
+  Variablen `ENABLE_TOR`, `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` und
+  `TOR_CONTROL_PASS`.
 
 ## Setup
 
@@ -97,7 +99,9 @@ This project contains a simple Telegram bot and an admin interface for managing 
 * Admin login using the username and password from `ADMIN_USER` and `ADMIN_PASS`.
 * Manage products with name, price and description.
 * The GUI runs locally on port 8000.
-* New `/tor` route lets you modify Tor settings.
+* New `/tor` route allows controlling Tor using the `ENABLE_TOR`,
+  `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` and `TOR_CONTROL_PASS`
+  environment variables.
 
 ## Setup
 
@@ -141,6 +145,10 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `ENABLE_TOR` – set to `1` to expose the admin GUI via Tor
+* `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
+* `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
+* `TOR_CONTROL_PASS` – password for the Tor control port
 
 
 You can store these values in a `.env` file. This file must **not** be committed to the repository.

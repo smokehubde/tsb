@@ -1,5 +1,12 @@
 import os
-from flask import request, redirect, url_for, render_template, session
+from flask import (
+    request,
+    redirect,
+    url_for,
+    render_template,
+    session,
+    render_template_string,
+)
 
 from db import create_app, db, Product
 
@@ -102,13 +109,17 @@ def delete_product(pid):
 @app.route('/tor', methods=['GET', 'POST'])
 @login_required
 def tor_settings():
-    """Display and update Tor connection settings."""
+    """Display and update Tor control settings."""
     message = None
-    host = os.getenv('TOR_HOST', '127.0.0.1')
-    port = os.getenv('TOR_PORT', '9050')
+    enabled = os.getenv('ENABLE_TOR', '0') in {'1', 'true', 'yes'}
+    host = os.getenv('TOR_CONTROL_HOST', '127.0.0.1')
+    port = os.getenv('TOR_CONTROL_PORT', '9051')
+    password = os.getenv('TOR_CONTROL_PASS', '')
     if request.method == 'POST':
+        enabled = request.form.get('enabled') == 'on'
         host = request.form.get('host', '').strip()
         port_input = request.form.get('port', '').strip()
+        password = request.form.get('password', '')
         if not host:
             message = 'Host required'
         else:
@@ -119,25 +130,31 @@ def tor_settings():
             except ValueError:
                 message = 'Invalid port'
             else:
-                update_env_var('TOR_HOST', host)
-                update_env_var('TOR_PORT', str(port_val))
+                update_env_var('ENABLE_TOR', '1' if enabled else '0')
+                update_env_var('TOR_CONTROL_HOST', host)
+                update_env_var('TOR_CONTROL_PORT', str(port_val))
+                update_env_var('TOR_CONTROL_PASS', password)
                 port = str(port_val)
                 message = 'Settings updated'
     return render_template_string('''
         {% if message %}<p>{{ message }}</p>{% endif %}
         <form method="post">
-            <input name="host" value="{{ host }}" placeholder="Host">
-            <input name="port" type="number" value="{{ port }}" placeholder="Port">
+            <label>Enable Tor
+                <input type="checkbox" name="enabled" {% if enabled %}checked{% endif %}>
+            </label><br>
+            <input name="host" value="{{ host }}" placeholder="Control Host">
+            <input name="port" type="number" value="{{ port }}" placeholder="Control Port">
+            <input name="password" type="text" value="{{ password }}" placeholder="Password">
             <button type="submit">Save</button>
         </form>
-    ''', host=host, port=port, message=message)
+    ''', enabled=enabled, host=host, port=port, password=password, message=message)
 
 
 def main():
     """Start the admin web app and optionally expose it as a Tor hidden service."""
     onion_service = None
     ctx = None
-    if os.getenv("TOR_CONTROL_PORT"):
+    if os.getenv("ENABLE_TOR", "0") in {"1", "true", "yes"}:
         try:
             from tor_service import hidden_service
             ctx = hidden_service(ADMIN_PORT)
