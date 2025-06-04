@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -9,11 +10,24 @@ from aiogram import F
 from db import create_app, SessionLocal, User
 
 
+def load_env(path: str | None = None) -> None:
+    """Load variables from a .env file into ``os.environ`` if not already set."""
+    env_path = path or os.getenv("ENV_FILE", str(Path(__file__).with_name(".env")))
+    if not os.path.exists(env_path):
+        return
+    with open(env_path) as f:
+        for line in f:
+            if "=" in line and not line.strip().startswith("#"):
+                key, value = line.strip().split("=", 1)
+                os.environ.setdefault(key, value)
+
+
 class LangStates(StatesGroup):
     choose = State()
 
 
 def get_bot_token():
+    load_env()
     token = os.getenv("BOT_TOKEN")
     if not token:
         raise RuntimeError("BOT_TOKEN environment variable missing")
