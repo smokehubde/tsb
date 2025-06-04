@@ -20,17 +20,20 @@ def login_required(func):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         if (request.form.get('username') == os.getenv('ADMIN_USER') and
                 request.form.get('password') == os.getenv('ADMIN_PASS')):
             session['logged_in'] = True
             return redirect(url_for('product_list'))
+        error = "Invalid credentials"
     return render_template_string('''
+        {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
         <form method="post">
             <input name="username" placeholder="Username">
             <input name="password" type="password" placeholder="Password">
             <button type="submit">Login</button>
-        </form>''')
+        </form>''', error=error)
 
 
 @app.route('/logout')
