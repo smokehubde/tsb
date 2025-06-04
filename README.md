@@ -182,3 +182,4 @@ Unit tests are executed using pytest. After installing the dependencies you can 
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
