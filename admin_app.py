@@ -37,7 +37,7 @@ def load_env(path: str | None = None) -> None:
                 else:
                     os.environ.setdefault(key, value)
 
-from db import create_app, db, Product
+from db import create_app, db, Product, ShippingCost
 
 load_env()
 app = create_app()
@@ -131,6 +131,42 @@ def delete_product(pid):
     db.session.delete(product)
     db.session.commit()
     return redirect(url_for('product_list'))
+
+
+@app.route('/shipping', methods=['GET', 'POST'])
+@login_required
+def shipping():
+    """Manage shipping costs per country."""
+    message = None
+    if request.method == 'POST':
+        country = request.form.get('country', '').strip()
+        cost_val = request.form.get('cost', '').strip()
+        if not country:
+            message = 'Country required'
+        else:
+            try:
+                cost = float(cost_val)
+            except ValueError:
+                message = 'Invalid cost'
+            else:
+                entry = ShippingCost.query.filter_by(country=country).first()
+                if entry:
+                    entry.cost = cost
+                else:
+                    db.session.add(ShippingCost(country=country, cost=cost))
+                db.session.commit()
+                message = 'Saved'
+    costs = ShippingCost.query.order_by(ShippingCost.country).all()
+    return render_template('shipping.html', costs=costs, message=message)
+
+
+@app.route('/shipping/delete/<int:sid>')
+@login_required
+def delete_shipping(sid):
+    entry = ShippingCost.query.get_or_404(sid)
+    db.session.delete(entry)
+    db.session.commit()
+    return redirect(url_for('shipping'))
 
 
 @app.route('/tor', methods=['GET', 'POST'])
