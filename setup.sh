@@ -9,7 +9,8 @@ python3 -m venv "$VENV_DIR"
 source "$VENV_DIR/bin/activate"
 
 pip install --upgrade pip
-pip install aiogram flask flask_sqlalchemy
+# install dependencies defined in requirements.txt to stay in sync with setup.py
+pip install -r "$REPO_DIR/requirements.txt"
 
 # load existing variables from .env if present
 if [ -f "$ENV_FILE" ]; then

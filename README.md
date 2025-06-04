@@ -15,22 +15,27 @@ diese Einstellung für den Nutzer.
 
 ## Setup
 
-Das Skript `setup.sh` richtet eine Python-`venv` ein, installiert die
-Abhängigkeiten und erstellt systemd-Dienste für Bot und GUI.
-Es setzt eine Unix-Shell (bash) voraus und funktioniert daher unter Linux
-oder macOS.
+Das Projekt bietet zwei gleichwertige Skripte zum Einrichten der
+Entwicklungsumgebung:
+
+* `setup.sh` – Bash-Skript für Linux/macOS.
+* `setup.py` – Python-Variante, die auch unter Windows funktioniert.
+
+Beide Skripte legen eine virtuelle Umgebung im Ordner `venv` an, installieren
+die Abhängigkeiten aus `requirements.txt`, schreiben die benötigten Variablen in
+eine `.env`-Datei und erzeugen auf Linux die systemd-Dienste für Bot und GUI.
+
+Unter Unix-Systemen führst du typischerweise das Shell-Skript aus:
 
 ```bash
 ./setup.sh
 ```
 
-Alternativ kann das Setup komplett in Python ausgeführt werden:
+Auf allen Plattformen kannst du alternativ das Python-Skript verwenden:
 
 ```bash
 python setup.py
 ```
-Dieses Skript legt ebenfalls eine virtuelle Umgebung an, speichert die
-benötigten Variablen in `.env` und erzeugt die systemd-Dienste.
 
 
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
