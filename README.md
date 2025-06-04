@@ -18,6 +18,9 @@ diese Einstellung für den Nutzer.
 
 ## Setup
 
+Für das Setup wird Python 3 benötigt. Auf manchen Systemen heißt das
+Kommando `python3`.
+
 Das Projekt bietet zwei gleichwertige Skripte zum Einrichten der
 Entwicklungsumgebung:
 
@@ -40,14 +43,14 @@ Unter Unix-Systemen führst du typischerweise das Shell-Skript aus:
 Auf allen Plattformen kannst du alternativ das Python-Skript verwenden:
 
 ```bash
-python setup.py
+python3 setup.py
 ```
 
 Sollte `systemctl --user` nicht verfügbar sein, starte Bot und GUI manuell:
 
 ```bash
-python bot.py
-python admin_app.py
+python3 bot.py
+python3 admin_app.py
 ```
 
 
@@ -105,6 +108,8 @@ This project contains a simple Telegram bot and an admin interface for managing 
 
 ## Setup
 
+Python 3 is required. On some systems the executable is named `python3`.
+
 The project provides two equivalent scripts for setting up the development environment:
 
 * `setup.sh` – Bash script for Linux/macOS.
@@ -122,14 +127,14 @@ On Unix systems you typically run the shell script:
 On any platform you can alternatively use the Python script:
 
 ```bash
-python setup.py
+python3 setup.py
 ```
 
 If `systemctl --user` is not available, start bot and GUI manually:
 
 ```bash
-python bot.py
-python admin_app.py
+python3 bot.py
+python3 admin_app.py
 ```
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
