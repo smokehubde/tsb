@@ -14,15 +14,28 @@ ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env")
 
 
 def load_env(path: str | None = None) -> None:
-    """Load variables from a .env file into ``os.environ`` if not already set."""
+    """Load variables from a .env file into ``os.environ``.
+
+    When a path is given or ``ENV_FILE`` is explicitly set, environment
+    variables from that file override existing ones. Otherwise, values are only
+    added if missing. This mirrors the behaviour in ``bot.load_env`` and allows
+    tests to control the configuration reliably.
+    """
+
     env_path = path or ENV_FILE
     if not os.path.exists(env_path):
         return
+
+    override = path is not None or "ENV_FILE" in os.environ
+
     with open(env_path) as f:
         for line in f:
             if "=" in line and not line.strip().startswith("#"):
                 key, value = line.strip().split("=", 1)
-                os.environ.setdefault(key, value)
+                if override:
+                    os.environ[key] = value
+                else:
+                    os.environ.setdefault(key, value)
 
 from db import create_app, db, Product
 
