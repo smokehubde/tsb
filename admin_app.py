@@ -1,10 +1,13 @@
 from flask import request, redirect, url_for, render_template_string, session
+from flask_wtf import CSRFProtect
+from werkzeug.security import generate_password_hash, check_password_hash
 from db import create_app, db, Product
 
 app = create_app()
+csrf = CSRFProtect(app)
 
 ADMIN_USER = 'admin'
-ADMIN_PASS = 'q12wq12w'
+ADMIN_PASS_HASH = generate_password_hash('q12wq12w')
 
 
 def login_required(func):
@@ -21,12 +24,15 @@ def login_required(func):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if (request.form.get('username') == ADMIN_USER and
-                request.form.get('password') == ADMIN_PASS):
+        if (
+            request.form.get('username') == ADMIN_USER and
+            check_password_hash(ADMIN_PASS_HASH, request.form.get('password'))
+        ):
             session['logged_in'] = True
             return redirect(url_for('product_list'))
     return render_template_string('''
         <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input name="username" placeholder="Username">
             <input name="password" type="password" placeholder="Password">
             <button type="submit">Login</button>
@@ -70,6 +76,7 @@ def add_product():
         return redirect(url_for('product_list'))
     return render_template_string('''
         <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input name="name" placeholder="Name">
             <input name="price" placeholder="Price" type="number" step="0.01">
             <textarea name="description" placeholder="Beschreibung"></textarea>
@@ -90,6 +97,7 @@ def edit_product(pid):
         return redirect(url_for('product_list'))
     return render_template_string('''
         <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input name="name" value="{{ p.name }}">
             <input name="price" type="number" step="0.01" value="{{ p.price }}">
             <textarea name="description">{{ p.description }}</textarea>
