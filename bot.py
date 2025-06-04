@@ -11,15 +11,29 @@ from db import create_app, SessionLocal, User
 
 
 def load_env(path: str | None = None) -> None:
-    """Load variables from a .env file into ``os.environ`` if not already set."""
+    """Load variables from a .env file into ``os.environ``.
+
+    If a path is explicitly provided or the ``ENV_FILE`` environment variable is
+    set, variables from that file override existing ones. Otherwise values are
+    only added when they are missing. This allows tests to supply their own
+    environment file and ensures the provided values take precedence over a
+    globally defined ``BOT_TOKEN``.
+    """
+
     env_path = path or os.getenv("ENV_FILE", str(Path(__file__).with_name(".env")))
     if not os.path.exists(env_path):
         return
+
+    override = path is not None or "ENV_FILE" in os.environ
+
     with open(env_path) as f:
         for line in f:
             if "=" in line and not line.strip().startswith("#"):
                 key, value = line.strip().split("=", 1)
-                os.environ.setdefault(key, value)
+                if override:
+                    os.environ[key] = value
+                else:
+                    os.environ.setdefault(key, value)
 
 
 class LangStates(StatesGroup):
