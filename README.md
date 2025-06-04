@@ -24,16 +24,6 @@ oder macOS.
 ./setup.sh
 ```
 
-Windows-Nutzer können stattdessen die plattformübergreifende Variante
-`setup.py` verwenden:
-
-```bash
-python setup.py
-```
-
-Beide Skripte fragen nach `BOT_TOKEN`, `ADMIN_USER`, `ADMIN_PASS` und
-`SECRET_KEY`, falls diese Variablen nicht bereits in der Umgebung gesetzt
-sind.
 
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
@@ -41,9 +31,13 @@ Nach dem Start ist der Bot über Telegram erreichbar (Token per
 
 ## Umgebungsvariablen
 
-Folgende Variablen müssen für die Dienste gesetzt sein:
+Die systemd-Dienste laden ihre Konfiguration aus der Datei `.env`. Sie muss
+die folgenden Variablen enthalten:
 
 * `BOT_TOKEN` – Telegram-Token für den Bot
 * `ADMIN_USER` – Benutzername für das Admin-Login
 * `ADMIN_PASS` – Passwort für das Admin-Login
 * `SECRET_KEY` – Flask-`SECRET_KEY` für die Web-Oberfläche
+
+Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
+Diese Datei darf **nicht** ins Repository eingecheckt werden.
