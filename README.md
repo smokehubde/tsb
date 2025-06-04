@@ -21,33 +21,46 @@ diese Einstellung für den Nutzer.
 Für das Setup wird Python 3 benötigt. Auf manchen Systemen heißt das
 Kommando `python3`.
 
-Das Projekt bietet zwei gleichwertige Skripte zum Einrichten der
-Entwicklungsumgebung:
+### Schritt-für-Schritt-Anleitung
 
-* `setup.sh` – Bash-Skript für Linux/macOS.
-* `setup.py` – Python-Variante, die auch unter Windows funktioniert.
+1. **Repository klonen**
+   ```bash
+   git clone https://example.com/tsb.git
+   cd tsb
+   ```
+2. **Setup-Skript ausführen** – wähle je nach Plattform zwischen dem
+   Bash-Skript oder der Python-Variante. Während der Ausführung wirst du
+   nach folgenden Informationen gefragt:
+   - `BOT_TOKEN` – das Telegram-Token deines Bots
+   - `ADMIN_USER` – Benutzername für den Admin-Zugang
+   - `ADMIN_PASS` – Passwort für den Admin-Zugang
+   - `SECRET_KEY` – geheimer Schlüssel für Flask
 
-Beide Skripte legen eine virtuelle Umgebung im Ordner `venv` an, installieren
-die Abhängigkeiten aus `requirements.txt`, schreiben die benötigten Variablen in
-eine `.env`-Datei und erzeugen auf Linux die systemd-Dienste für Bot und GUI.
-Die Dienste werden dabei mit absoluten Pfaden aktiviert:
-`systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"`.
-Zuvor wird automatisch `systemctl --user daemon-reload` ausgeführt.
+   ```bash
+   ./setup.sh       # Linux/macOS
+   # oder
+   python3 setup.py # Windows oder alternativ
+   ```
+   Die Werte werden in der Datei `.env` gespeichert und können dort später
+   angepasst werden.
+3. **Dienste starten** – auf Linux richten die Skripte automatisch
+   systemd-Dienste ein und starten sie. Auf anderen Systemen startest du
+   Bot und GUI manuell:
+   ```bash
+   python3 bot.py
+   python3 admin_app.py
+   ```
 
-Unter Unix-Systemen führst du typischerweise das Shell-Skript aus:
-
+Die Skripte legen dabei eine virtuelle Umgebung unter `venv` an,
+installieren die Abhängigkeiten und schreiben deine Angaben in die
+Datei `.env`. Auf Linux werden zudem systemd-Dienste mit absoluten Pfaden
+angelegt und sofort aktiviert:
 ```bash
-./setup.sh
-```
-
-Auf allen Plattformen kannst du alternativ das Python-Skript verwenden:
-
-```bash
-python3 setup.py
+systemctl --user daemon-reload
+systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
 ```
 
 Sollte `systemctl --user` nicht verfügbar sein, starte Bot und GUI manuell:
-
 ```bash
 python3 bot.py
 python3 admin_app.py
@@ -70,6 +83,10 @@ die folgenden Variablen enthalten:
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
 * `ADMIN_PORT` – Port der Admin-GUI (Standard: `8000`)
+* `WEBHOOK_URL` – HTTPS-URL für Telegram-Webhooks (optional)
+* `WEBHOOK_HOST` – Hostname/IP für den Webhook-Server (Standard: `0.0.0.0`)
+* `WEBHOOK_PORT` – Port für den Webhook-Server (Standard: `8080`)
+* `WEBHOOK_PATH` – Pfad der Webhook-Route (Standard: `/webhook`)
 
 
 Die Werte können beispielsweise in einer `.env`-Datei gespeichert werden.
@@ -110,32 +127,35 @@ This project contains a simple Telegram bot and an admin interface for managing 
 
 Python 3 is required. On some systems the executable is named `python3`.
 
-The project provides two equivalent scripts for setting up the development environment:
+### Step-by-step
 
-* `setup.sh` – Bash script for Linux/macOS.
-* `setup.py` – Python variant that also works on Windows.
+1. **Clone the repository**
+   ```bash
+   git clone https://example.com/tsb.git
+   cd tsb
+   ```
+2. **Run the setup script** – choose the Bash or Python version depending on your platform. During setup you will be asked to enter:
+   - `BOT_TOKEN` – your Telegram bot token
+   - `ADMIN_USER` – admin username
+   - `ADMIN_PASS` – admin password
+   - `SECRET_KEY` – secret key for Flask
 
-Both scripts create a virtual environment in the `venv` folder, install the dependencies from `requirements.txt`, write the required variables to a `.env` file and on Linux create the systemd services for bot and GUI. The services are enabled using absolute paths:
-`systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"`. `systemctl --user daemon-reload` is executed automatically before enabling them.
-
-On Unix systems you typically run the shell script:
-
-```bash
-./setup.sh
-```
-
-On any platform you can alternatively use the Python script:
-
-```bash
-python3 setup.py
-```
-
-If `systemctl --user` is not available, start bot and GUI manually:
-
-```bash
-python3 bot.py
-python3 admin_app.py
-```
+   ```bash
+   ./setup.sh       # Linux/macOS
+   # or
+   python3 setup.py # Windows or alternative
+   ```
+   The answers are stored in `.env` and can be modified later.
+3. **Start the services** – on Linux the scripts automatically configure and start systemd units. On other systems run the programs manually:
+   ```bash
+   python3 bot.py
+   python3 admin_app.py
+   ```
+   The scripts create a virtual environment under `venv`, install the dependencies and write your values to `.env`. On Linux, systemd units are enabled immediately using:
+   ```bash
+   systemctl --user daemon-reload
+   systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
+   ```
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
 
@@ -150,6 +170,10 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
 * `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `WEBHOOK_URL` – HTTPS URL for Telegram webhooks (optional)
+* `WEBHOOK_HOST` – Hostname/IP for the webhook server (default: `0.0.0.0`)
+* `WEBHOOK_PORT` – Port for the webhook server (default: `8080`)
+* `WEBHOOK_PATH` – Path for the webhook route (default: `/webhook`)
 * `ENABLE_TOR` – set to `1` to expose the admin GUI via Tor
 * `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
 * `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
