@@ -228,7 +228,11 @@ def tor_settings():
         """
         {% if message %}<p>{{ message }}</p>{% endif %}
         <form method="post">
+
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
             {{ csrf_token() }}
+
             <label>Enable Tor
                 <input type="checkbox" name="enabled" {% if enabled %}checked{% endif %}>
             </label><br>
