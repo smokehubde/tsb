@@ -53,8 +53,8 @@ Kommando `python3`.
    systemd-Dienste ein und starten sie. Auf anderen Systemen startest du
    Bot und GUI manuell:
    ```bash
-   python3 bot.py
-   python3 admin_app.py
+   python3 run_bot.py
+   python3 run_admin.py
    ```
    Wenn du das Setup-Skript übersprungen hast oder die Programme außerhalb
    des Verzeichnisses `venv` ausführst, installiere zunächst die Abhängigkeiten
@@ -74,8 +74,8 @@ systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
 
 Sollte `systemctl --user` nicht verfügbar sein, starte Bot und GUI manuell:
 ```bash
-python3 bot.py
-python3 admin_app.py
+python3 run_bot.py
+python3 run_admin.py
 ```
 
 
@@ -186,8 +186,8 @@ Python 3 is required. On some systems the executable is named `python3`.
    virtual environment first so the installed dependencies are found:
    ```bash
    source venv/bin/activate
-   python bot.py
-   python admin_app.py
+   python run_bot.py
+   python run_admin.py
    ```
    If you skipped the setup script, install the requirements manually:
    ```bash

@@ -16,7 +16,8 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from aiohttp import web
 
 from config import load_env, setup_logging
-from db import create_app, SessionLocal, User, ShippingCost, Product
+from database import create_app
+from models import SessionLocal, User, ShippingCost, Product
 from currency import convert, COUNTRY_CURRENCY
 
 

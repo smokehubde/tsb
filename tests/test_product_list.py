@@ -36,12 +36,17 @@ def test_cmd_start_lists_products(tmp_path, monkeypatch):
     monkeypatch.setenv("BOT_TOKEN", "123:TEST")
     monkeypatch.setenv("SECRET_KEY", "test")
 
-    if "db" in sys.modules:
-        importlib.reload(sys.modules["db"])
+    if "models" in sys.modules:
+        importlib.reload(sys.modules["models"])
     else:
-        importlib.import_module("db")
-    import db
-    app = db.create_app()
+        importlib.import_module("models")
+    if "database" in sys.modules:
+        importlib.reload(sys.modules["database"])
+    else:
+        importlib.import_module("database")
+    import models as db
+    import database
+    app = database.create_app()
     with app.app_context():
         db.db.create_all()
         db.db.session.add(db.User(telegram_id=1, language="de", country="DE"))

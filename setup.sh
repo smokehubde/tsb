@@ -70,8 +70,9 @@ prompt_var ADMIN_USER "Admin username"
 
 prompt_var ADMIN_PASS "Admin password"
 HASHED=$(python3 - <<'EOF'
-import bcrypt, os
-print(bcrypt.hashpw(os.environ['ADMIN_PASS'].encode(), bcrypt.gensalt()).decode())
+from werkzeug.security import generate_password_hash
+import os
+print(generate_password_hash(os.environ['ADMIN_PASS']))
 EOF
 )
 write_env ADMIN_PASS_HASH "$HASHED"
@@ -101,7 +102,7 @@ After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
 EnvironmentFile=$ENV_FILE
-ExecStart=$VENV_DIR/bin/python $REPO_DIR/bot.py
+ExecStart=$VENV_DIR/bin/python $REPO_DIR/run_bot.py
 Restart=always
 [Install]
 WantedBy=default.target
@@ -115,7 +116,7 @@ After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
 EnvironmentFile=$ENV_FILE
-ExecStart=$VENV_DIR/bin/python $REPO_DIR/admin_app.py
+ExecStart=$VENV_DIR/bin/python $REPO_DIR/run_admin.py
 Restart=always
 [Install]
 WantedBy=default.target
@@ -128,8 +129,8 @@ if [ "$CREATE_SERVICES" -eq 1 ]; then
     else
         echo "systemd not available, skipping service creation."
         echo "Start the services manually:" >&2
-        echo "  $VENV_DIR/bin/python $REPO_DIR/bot.py" >&2
-        echo "  $VENV_DIR/bin/python $REPO_DIR/admin_app.py" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/run_bot.py" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/run_admin.py" >&2
     fi
 else
     echo "Skipping service creation (--no-services)."

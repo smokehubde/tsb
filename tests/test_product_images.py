@@ -11,16 +11,18 @@ def test_upload_image(tmp_path, monkeypatch):
     img.write_bytes(b'fake')
     monkeypatch.setenv('DATABASE_URL', f'sqlite:///{db_path}')
     monkeypatch.setenv('SECRET_KEY', 'test')
-    import bcrypt
+    from werkzeug.security import generate_password_hash
     monkeypatch.setenv('ADMIN_USER', 'admin')
-    monkeypatch.setenv('ADMIN_PASS_HASH', bcrypt.hashpw(b'pass', bcrypt.gensalt()).decode())
+    monkeypatch.setenv('ADMIN_PASS_HASH', generate_password_hash('pass'))
     monkeypatch.setenv('FLASK_ENV', 'test')
 
-    if 'db' in importlib.sys.modules:
-        importlib.reload(importlib.import_module('db'))
-    if 'admin_app' in importlib.sys.modules:
-        importlib.reload(importlib.import_module('admin_app'))
-    admin_app = importlib.import_module('admin_app')
+    if 'models' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('models'))
+    if 'database' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('database'))
+    if 'admin' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('admin'))
+    admin_app = importlib.import_module('admin')
     app = admin_app.app
     client = app.test_client()
 
@@ -36,6 +38,6 @@ def test_upload_image(tmp_path, monkeypatch):
     assert resp.status_code == 302
 
     with app.app_context():
-        from db import Product
+        from models import Product
         p = Product.query.first()
         assert p.image_path

@@ -40,12 +40,17 @@ def test_set_country_shows_shipping(tmp_path, monkeypatch):
     monkeypatch.setenv("BOT_TOKEN", "123456:TEST")
     monkeypatch.setenv("SECRET_KEY", "test")
 
-    if "db" in sys.modules:
-        importlib.reload(sys.modules["db"])
+    if "models" in sys.modules:
+        importlib.reload(sys.modules["models"])
     else:
-        importlib.import_module("db")
-    import db
-    app = db.create_app()
+        importlib.import_module("models")
+    if "database" in sys.modules:
+        importlib.reload(sys.modules["database"])
+    else:
+        importlib.import_module("database")
+    import database
+    import models as db
+    app = database.create_app()
     with app.app_context():
         db.db.create_all()
         db.db.session.add(db.ShippingCost(country="DE", cost=4.5))
