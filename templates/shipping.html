@@ -12,7 +12,11 @@
         <td>{{ c.country }}</td>
         <td>
             <form method="post" style="display:inline">
+
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                {{ csrf_token() }}
+
                 <input type="hidden" name="country" value="{{ c.country }}">
                 <input name="cost" type="number" step="0.01" value="{{ c.cost }}">
                 <button type="submit">Save</button>
@@ -25,7 +29,11 @@
 
 <h3>Add new country</h3>
 <form method="post">
+
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    {{ csrf_token() }}
+
     <input name="country" placeholder="Country">
     <input name="cost" type="number" step="0.01" placeholder="Cost">
     <button type="submit">Add</button>
