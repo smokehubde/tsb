@@ -3,6 +3,8 @@ Flask
 flask_sqlalchemy
 stem
 
+requests
+
 python-dotenv
 
 Flask-WTF

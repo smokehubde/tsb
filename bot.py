@@ -17,6 +17,7 @@ from aiohttp import web
 
 from config import load_env, setup_logging
 from db import create_app, SessionLocal, User, ShippingCost
+from currency import convert, COUNTRY_CURRENCY
 
 
 class LangStates(StatesGroup):
@@ -54,7 +55,14 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
         if not user or not user.language:
             kb = ReplyKeyboardMarkup(
-                keyboard=[[KeyboardButton(text="Deutsch"), KeyboardButton(text="English")]],
+                keyboard=[
+                    [
+                        KeyboardButton(text="Deutsch"),
+                        KeyboardButton(text="English"),
+                        KeyboardButton(text="Türkçe"),
+                        KeyboardButton(text="Русский"),
+                    ]
+                ],
                 resize_keyboard=True,
             )
             await message.answer(
@@ -74,14 +82,27 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
                 await state.set_state(CountryStates.choose)
                 return
 
-        greeting = "W\xe4hle ein Produkt" if user.language == "de" else "Choose a product"
+        greetings = {
+            "de": "W\xe4hle ein Produkt",
+            "tr": "Bir \u00fcr\u00fcn se\u00e7",
+            "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
+        }
+        greeting = greetings.get(user.language, "Choose a product")
         await message.answer(greeting)
 
 
 @dp.message(LangStates.choose)
 async def set_language(message: types.Message, state: FSMContext) -> None:
     """Store the user's chosen language."""
-    lang = "de" if message.text.lower().startswith("de") else "en"
+    text = message.text.lower()
+    if text.startswith("de"):
+        lang = "de"
+    elif text.startswith("tr"):
+        lang = "tr"
+    elif text.startswith("ru"):
+        lang = "ru"
+    else:
+        lang = "en"
     with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
         if not user:
@@ -102,7 +123,12 @@ async def set_language(message: types.Message, state: FSMContext) -> None:
         await message.answer("Choose country", reply_markup=kb)
     else:
         await state.clear()
-        greeting = "W\xe4hle ein Produkt" if lang == "de" else "Choose a product"
+        greetings = {
+            "de": "W\xe4hle ein Produkt",
+            "tr": "Bir \u00fcr\u00fcn se\u00e7",
+            "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
+        }
+        greeting = greetings.get(lang, "Choose a product")
         await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 
@@ -125,8 +151,22 @@ async def set_country(message: types.Message, state: FSMContext) -> None:
 
     await state.clear()
     if shipping_cost is not None:
-        await message.answer(f"Shipping to {country}: {shipping_cost} \u20ac")
-    greeting = "W\xe4hle ein Produkt" if lang == "de" else "Choose a product"
+        currency = COUNTRY_CURRENCY.get(country, "EUR")
+        if currency != "EUR":
+            try:
+                cost_converted = convert(shipping_cost, "EUR", currency)
+                cost_text = f"{cost_converted:.2f} {currency} (\u2248 {shipping_cost} \u20ac)"
+            except Exception:
+                cost_text = f"{shipping_cost} \u20ac"
+        else:
+            cost_text = f"{shipping_cost} \u20ac"
+        await message.answer(f"Shipping to {country}: {cost_text}")
+    greetings = {
+        "de": "W\xe4hle ein Produkt",
+        "tr": "Bir \u00fcr\u00fcn se\u00e7",
+        "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
+    }
+    greeting = greetings.get(lang, "Choose a product")
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 

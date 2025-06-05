@@ -51,6 +51,8 @@ def test_set_country_shows_shipping(tmp_path, monkeypatch):
         db.db.session.add(db.ShippingCost(country="DE", cost=4.5))
         db.db.session.commit()
 
+    import currency
+    monkeypatch.setattr(currency, 'convert', lambda a, b, c: a)
     if "bot" in sys.modules:
         importlib.reload(sys.modules["bot"])
     else:
