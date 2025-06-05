@@ -80,6 +80,8 @@ python3 admin_app.py
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
 [http://localhost:8000](http://localhost:8000).
+Nach dem Setup wird zudem eine Datei `onion_url.txt` mit der Tor-Adresse erzeugt,
+die im Terminal ausgegeben wird.
 
 ## Umgebungsvariablen
 
@@ -179,6 +181,7 @@ Python 3 is required. On some systems the executable is named `python3`.
    ```
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
+The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere.
 
 ## Environment Variables
 
@@ -199,6 +202,7 @@ The systemd services load their configuration from the `.env` file. It must cont
 * `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
 * `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
 * `TOR_CONTROL_PASS` – password for the Tor control port
+* `ONION_FILE` – file where the generated Tor URL is stored (default: `onion_url.txt`)
 
 
 You can store these values in a `.env` file. This file must **not** be committed to the repository.

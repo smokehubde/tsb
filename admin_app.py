@@ -270,6 +270,12 @@ def main(argv: list[str] | None = None) -> None:
             ctx = hidden_service(args.port)
             onion_service = ctx.__enter__()
             logger.info("Tor hidden service available at http://%s", onion_service)
+            onion_file = os.getenv(
+                "ONION_FILE",
+                os.path.join(os.path.dirname(__file__), "onion_url.txt"),
+            )
+            with open(onion_file, "w") as f:
+                f.write(f"http://{onion_service}\n")
         except Exception as exc:  # pragma: no cover - Tor optional in tests
             logger.error("Failed to start Tor hidden service: %s", exc)
             onion_service = None

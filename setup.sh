@@ -55,6 +55,11 @@ unset ADMIN_PASS
 
 prompt_var SECRET_KEY "Flask SECRET_KEY"
 
+# enable Tor by default and configure the file containing the onion URL
+write_env ENABLE_TOR 1
+ONION_FILE="$REPO_DIR/onion_url.txt"
+write_env ONION_FILE "$ONION_FILE"
+
 echo "[Unit]" > bot.service
 cat >> bot.service <<SERVICE
 Description=Telegram Shop Bot
@@ -93,4 +98,22 @@ else
 fi
 
 echo "Telegram Bot started. Configure it via Telegram."
-echo "Admin GUI available at http://localhost:8000" 
+echo "Admin GUI available at http://localhost:8000"
+
+# wait for Tor hidden service information if available
+if [ -n "$ONION_FILE" ]; then
+    echo -n "Waiting for Tor address..."
+    for _ in {1..10}; do
+        if [ -f "$ONION_FILE" ]; then
+            echo
+            echo "Admin GUI via Tor: $(cat "$ONION_FILE")"
+            break
+        fi
+        sleep 1
+        echo -n "."
+    done
+    if [ ! -f "$ONION_FILE" ]; then
+        echo
+        echo "Tor onion address not found. Check admin.log for details." >&2
+    fi
+fi
