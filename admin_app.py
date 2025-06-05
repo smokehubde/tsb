@@ -16,6 +16,7 @@ from flask import (
     render_template_string,
 )
 from flask_wtf import CSRFProtect
+from werkzeug.exceptions import HTTPException
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import bcrypt
@@ -46,6 +47,9 @@ limiter = Limiter(get_remote_address, app=app, enabled=not app.config["TESTING"]
 
 @app.errorhandler(Exception)
 def handle_exception(error: Exception):
+    if isinstance(error, HTTPException):
+        # propagate HTTP errors like CSRF failures
+        return error
     app.logger.exception("Unhandled error: %s", error)
     return "Internal Server Error", 500
 
