@@ -25,6 +25,9 @@ class DummyState:
     async def set_state(self, state):
         self.state = state
 
+    async def clear(self):
+        self.state = None
+
 async def call_handler(handler, message, state):
     await handler(message, state)
 
@@ -62,5 +65,41 @@ def test_cmd_start_lists_products(tmp_path, monkeypatch):
     msg = DummyMessage("/start")
     state = DummyState()
     asyncio.run(call_handler(bot.cmd_start, msg, state))
+
+    assert any("Prod1" in r for r in msg.responses)
+
+
+def test_set_language_lists_products_when_no_countries(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    monkeypatch.setenv("ENV_FILE", str(env_file))
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path}/test.sqlite3")
+    monkeypatch.setenv("BOT_TOKEN", "123:TEST")
+    monkeypatch.setenv("SECRET_KEY", "test")
+
+    if "models" in sys.modules:
+        importlib.reload(sys.modules["models"])
+    else:
+        importlib.import_module("models")
+    if "database" in sys.modules:
+        importlib.reload(sys.modules["database"])
+    else:
+        importlib.import_module("database")
+    import models as db
+    import database
+    app = database.create_app()
+    with app.app_context():
+        db.db.create_all()
+        db.db.session.add(db.Product(name="Prod1", price=1.0, description="Desc"))
+        db.db.session.commit()
+
+    if "bot" in sys.modules:
+        importlib.reload(sys.modules["bot"])
+    else:
+        importlib.import_module("bot")
+    import bot
+
+    msg = DummyMessage("Deutsch")
+    state = DummyState()
+    asyncio.run(call_handler(bot.set_language, msg, state))
 
     assert any("Prod1" in r for r in msg.responses)

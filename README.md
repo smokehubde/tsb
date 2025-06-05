@@ -13,7 +13,6 @@ diese Einstellung für den Nutzer.
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * Verwaltung von Versandkosten pro Land.
 * Nach Auswahl des Landes zeigt der Bot die Versandkosten an.
-=======
 
 * GUI läuft lokal auf Port 8000.
 * Neue Route `/tor` ermöglicht das Steuern des Tor-Dienstes über die
@@ -82,7 +81,8 @@ python3 run_admin.py
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
 [http://localhost:8000](http://localhost:8000).
-Die Skripte schreiben Logdateien `bot.log` und `admin.log`, die bei Fehlern
+Die Skripte schreiben Logdateien `bot.log` und `admin.log` im
+Projektverzeichnis (dem `WorkingDirectory` der systemd-Dienste), die bei Fehlern
 hilfreich sind.
 Nach dem Setup wird zudem eine Datei `onion_url.txt` mit der Tor-Adresse erzeugt,
 die im Terminal ausgegeben wird. Stelle sicher, dass der Dienst `tor` läuft und
@@ -136,112 +136,12 @@ Dieses Projekt steht unter der MIT-Lizenz. Siehe [LICENSE](LICENSE) fuer Details
 
 ---
 
-# Telegram Shop Bot (English)
+## English Summary
 
-This project contains a simple Telegram bot and an admin interface for managing products. The bot uses aiogram 3.x and the admin GUI is built with Flask.
+Run `./setup.sh` (or `python setup.py` on Windows) to create the virtual
+environment and collect configuration values. Start the services with
+`python run_bot.py` and `python run_admin.py`. Log files `bot.log` and
+`admin.log` are written to the project directory specified as
+`WorkingDirectory` in the systemd service files. If Tor support is enabled, the
+generated address is stored in `onion_url.txt`.
 
-## Features
-
-* On `/start` the bot asks for the language (German or English) and stores the setting for the user.
-* The first menu shows "Wähle ein Produkt" or "Choose a product" depending on the chosen language.
-* Admin login using the username and password from `ADMIN_USER` and `ADMIN_PASS`.
-* Manage products with name, price and description.
-* Manage shipping costs per country.
-* After selecting the country the bot shows the shipping fee.
-=======
-
-* The GUI runs locally on port 8000.
-* New `/tor` route allows controlling Tor using the `ENABLE_TOR`,
-  `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` and `TOR_CONTROL_PASS`
-  environment variables.
-
-## Setup
-
-Python 3 is required. On some systems the executable is named `python3`.
-
-### Step-by-step
-
-1. **Clone the repository**
-   ```bash
-   git clone https://example.com/tsb.git
-   cd tsb
-   ```
-2. **Run the setup script** – choose the Bash or Python version depending on your platform. During setup you will be asked to enter:
-   The script creates a virtual environment, installs all dependencies and prompts for
-   the required values:
-   - `BOT_TOKEN` – your Telegram bot token
-   - `ADMIN_USER` – admin username
-   - `ADMIN_PASS_HASH` – hashed admin password
-   - `SECRET_KEY` – secret key for Flask
-   - optional settings like database URL or webhook parameters
-
-   ```bash
-   ./setup.sh [--no-services]  # Linux/macOS
-   # or
-   python3 setup.py # Windows or alternative
-   ```
-   The answers are stored in `.env` and can be modified later.
-3. **Start the services** – on Linux the scripts automatically configure and start
-   systemd units. On other systems run the programs manually. Activate the
-   virtual environment first so the installed dependencies are found:
-   ```bash
-   source venv/bin/activate
-   python run_bot.py
-   python run_admin.py
-   ```
-   If you skipped the setup script, install the requirements manually:
-   ```bash
-   ./venv/bin/pip install -r requirements.txt
-   ```
-   The scripts create a virtual environment under `venv`, install the dependencies and write your values to `.env`. On Linux, systemd units are enabled immediately using:
-   ```bash
-   systemctl --user daemon-reload
-   systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
-   ```
-
-After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
-Log files `bot.log` and `admin.log` are created to help with troubleshooting.
-
-The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere. Ensure the `tor` service is running with a reachable control port (default `9051`), otherwise you will see `Tor onion address not found`.
-
-### Verify your setup
-
-After installing all requirements you can run
-
-```bash
-pytest
-```
-
-to ensure everything works as expected.
-
-## Environment Variables
-
-The systemd services load their configuration from the `.env` file. An example file `.env.example` is included. It must contain the following variables:
-
-* `BOT_TOKEN` – Telegram token for the bot
-* `ADMIN_USER` – Username for the admin login
-* `ADMIN_PASS_HASH` – hashed password for the admin login
-* `SECRET_KEY` – Flask `SECRET_KEY` for the web interface
-* `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
-* `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
-* `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
-* `WEBHOOK_URL` – HTTPS URL for Telegram webhooks (optional)
-* `WEBHOOK_HOST` – Hostname/IP for the webhook server (default: `0.0.0.0`)
-* `WEBHOOK_PORT` – Port for the webhook server (default: `8080`)
-* `WEBHOOK_PATH` – Path for the webhook route (default: `/webhook`)
-* `ENABLE_TOR` – set to `1` to expose the admin GUI via Tor
-* `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
-* `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
-* `TOR_CONTROL_PASS` – password for the Tor control port
-* `ONION_FILE` – file where the generated Tor URL is stored (default: `onion_url.txt`)
-
-
-You can store these values in a `.env` file. This file must **not** be committed to the repository.
-
-## Tests
-
-Unit tests are executed using pytest. After installing the dependencies you can run them directly with `pytest`.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

@@ -142,6 +142,7 @@ async def set_language(message: types.Message, state: FSMContext) -> None:
         await state.clear()
         greeting = GREETINGS.get(lang, "Choose a product")
         await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
+        await send_product_list(message)
 
 
 @dp.message(CountryStates.choose)
