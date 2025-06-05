@@ -1,13 +1,32 @@
-# Setup script for the Telegram Shop Bot
 #!/bin/bash
-set -e
+# Setup script for the Telegram Shop Bot
+set -euo pipefail
+
+CREATE_SERVICES=1
+for arg in "$@"; do
+    case "$arg" in
+        --no-services)
+            CREATE_SERVICES=0
+            ;;
+        *)
+            echo "Usage: $0 [--no-services]" >&2
+            exit 1
+            ;;
+    esac
+done
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="$REPO_DIR/venv"
 ENV_FILE="$REPO_DIR/.env"
 
-python3 -m venv "$VENV_DIR"
+command -v python3 >/dev/null 2>&1 || { echo "python3 not found" >&2; exit 1; }
+
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR"
+fi
 source "$VENV_DIR/bin/activate"
+
+command -v pip >/dev/null 2>&1 || { echo "pip not found" >&2; exit 1; }
 
 pip install --upgrade pip
 # install dependencies defined in requirements.txt to stay in sync with setup.py
@@ -32,10 +51,15 @@ write_env() {
 }
 
 prompt_var() {
-    local name="$1" prompt="$2"
-    local value="${!name}"
+    local name="$1" prompt="$2" default="${3:-}"
+    local value="${!name:-}"
     if [ -z "$value" ]; then
-        read -p "$prompt: " value
+        if [ -n "$default" ]; then
+            read -p "$prompt [$default]: " value
+            value="${value:-$default}"
+        else
+            read -p "$prompt: " value
+        fi
     fi
     export "$name"="$value"
     write_env "$name" "$value"
@@ -54,6 +78,17 @@ write_env ADMIN_PASS_HASH "$HASHED"
 unset ADMIN_PASS
 
 prompt_var SECRET_KEY "Flask SECRET_KEY"
+prompt_var DATABASE_URL "Database URL" "sqlite:///db.sqlite3"
+prompt_var ADMIN_HOST "Admin host" "127.0.0.1"
+prompt_var ADMIN_PORT "Admin port" "8000"
+prompt_var WEBHOOK_URL "Webhook URL (leave empty for polling)"
+prompt_var WEBHOOK_HOST "Webhook host" "0.0.0.0"
+prompt_var WEBHOOK_PORT "Webhook port" "8080"
+prompt_var WEBHOOK_PATH "Webhook path" "/webhook"
+prompt_var ENABLE_TOR "Enable Tor (1/0)" "0"
+prompt_var TOR_CONTROL_HOST "Tor control host" "127.0.0.1"
+prompt_var TOR_CONTROL_PORT "Tor control port" "9051"
+prompt_var TOR_CONTROL_PASS "Tor control password"
 
 # enable Tor by default and configure the file containing the onion URL
 write_env ENABLE_TOR 1
@@ -87,17 +122,22 @@ Restart=always
 WantedBy=default.target
 SERVICE
 
-if systemctl --user --version >/dev/null 2>&1; then
-    systemctl --user daemon-reload
-    systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
+if [ "$CREATE_SERVICES" -eq 1 ]; then
+    if systemctl --user --version >/dev/null 2>&1; then
+        systemctl --user daemon-reload
+        systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
+    else
+        echo "systemd not available, skipping service creation."
+        echo "Start the services manually:" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/bot.py" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/admin_app.py" >&2
+    fi
 else
-    echo "systemd not available, skipping service creation."
-    echo "Start the services manually:" >&2
-    echo "  $VENV_DIR/bin/python $REPO_DIR/bot.py" >&2
-    echo "  $VENV_DIR/bin/python $REPO_DIR/admin_app.py" >&2
+    echo "Skipping service creation (--no-services)."
 fi
 
 echo "Telegram Bot started. Configure it via Telegram."
+
 echo "Admin GUI available at http://localhost:8000"
 
 # wait for Tor hidden service information if available
@@ -117,3 +157,6 @@ if [ -n "$ONION_FILE" ]; then
         echo "Tor onion address not found. Check admin.log for details." >&2
     fi
 fi
+
+echo "Admin GUI available at http://${ADMIN_HOST:-localhost}:${ADMIN_PORT:-8000}"
+
