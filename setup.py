@@ -77,7 +77,7 @@ EnvironmentFile={ENV_FILE}
 ExecStart={python_exe} {REPO_DIR / 'bot.py'}
 Restart=always
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 """
         )
 
@@ -91,7 +91,7 @@ EnvironmentFile={ENV_FILE}
 ExecStart={python_exe} {REPO_DIR / 'admin_app.py'}
 Restart=always
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 """
         )
 

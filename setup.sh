@@ -55,7 +55,7 @@ EnvironmentFile=$ENV_FILE
 ExecStart=$VENV_DIR/bin/python $REPO_DIR/bot.py
 Restart=always
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 SERVICE
 
 
@@ -69,7 +69,7 @@ EnvironmentFile=$ENV_FILE
 ExecStart=$VENV_DIR/bin/python $REPO_DIR/admin_app.py
 Restart=always
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 SERVICE
 
 if systemctl --user --version >/dev/null 2>&1; then
