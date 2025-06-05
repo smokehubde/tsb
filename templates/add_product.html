@@ -1,4 +1,5 @@
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input name="name" placeholder="Name">
     <input name="price" placeholder="Price" type="number" step="0.01">
     <textarea name="description" placeholder="Beschreibung"></textarea>
