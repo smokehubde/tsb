@@ -1,61 +1,44 @@
 # Telegram Shop Bot
 
-Dieses Projekt beinhaltet einen einfachen Telegram-Bot und eine Admin-Oberfläche
-zum Verwalten von Produkten. Der Bot ist mit aiogram 3.x umgesetzt, die
-Admin-GUI basiert auf Flask.
+Dieses Projekt enthält einen einfachen Telegram-Bot und eine Admin-Oberfläche zum Verwalten von Produkten. The bot uses aiogram 3.x and the admin GUI is built with Flask.
 
-## Funktionen
+## Funktionen / Features
 
-* Bot fragt bei `/start` die Sprache ab (Deutsch oder Englisch) und speichert
-diese Einstellung für den Nutzer.
-* Erste Menü-Ausgabe "Wähle ein Produkt" bzw. "Choose a product" je nach Sprache.
-* Admin-Login (Benutzername und Passwort über `ADMIN_USER` und `ADMIN_PASS`).
-* Produktverwaltung mit Name, Preis und Beschreibung.
-* Verwaltung von Versandkosten pro Land.
-* Nach Auswahl des Landes zeigt der Bot die Versandkosten an.
-=======
+- Bot fragt bei `/start` nach der Sprache (Deutsch oder Englisch) und speichert die Auswahl / On `/start` the bot asks for the preferred language and remembers it.
+- Erste Menü-Ausgabe "Wähle ein Produkt" bzw. "Choose a product" je nach Sprache.
+- Admin-Login über `ADMIN_USER` und `ADMIN_PASS`.
+- Verwaltung von Produkten mit Name, Preis und Beschreibung / Manage products with name, price and description.
+- Versandkosten pro Land verwalten / Manage shipping costs per country.
+- Nach Auswahl des Landes zeigt der Bot die Versandkosten an / After selecting the country the bot shows the shipping fee.
+- GUI läuft lokal auf Port 8000 / The GUI runs locally on port 8000.
+- Neue Route `/tor` ermöglicht das Steuern des Tor-Dienstes über `ENABLE_TOR`, `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` und `TOR_CONTROL_PASS` / `/tor` route controls Tor using those environment variables.
 
-* GUI läuft lokal auf Port 8000.
-* Neue Route `/tor` ermöglicht das Steuern des Tor-Dienstes über die
-  Variablen `ENABLE_TOR`, `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` und
-  `TOR_CONTROL_PASS`.
+## Setup / Einrichtung
 
-## Setup
+Python 3 wird benötigt (auf manchen Systemen `python3`). / Python 3 is required.
 
-Für das Setup wird Python 3 benötigt. Auf manchen Systemen heißt das
-Kommando `python3`.
+### Schritt für Schritt / Step by step
 
-### Schritt-für-Schritt-Anleitung
-
-1. **Repository klonen**
+1. **Repository klonen / Clone the repository**
    ```bash
    git clone https://example.com/tsb.git
    cd tsb
    ```
-2. **Setup-Skript ausführen** – wähle je nach Plattform zwischen dem
-   Bash-Skript oder der Python-Variante. Das Skript legt eine virtuelle
-   Umgebung an, installiert alle Abhängigkeiten und fragt die benötigten
-   Variablen ab:
-   - `BOT_TOKEN` – das Telegram-Token deines Bots
-   - `ADMIN_USER` – Benutzername für den Admin-Zugang
-   - `ADMIN_PASS` – Passwort für den Admin-Zugang (wird gehasht gespeichert)
-   - `SECRET_KEY` – geheimer Schlüssel für Flask
-   - weitere optionale Einstellungen wie Datenbank-URL oder Webhook-Daten
-
+2. **Setup-Skript ausführen / Run the setup script**
    ```bash
    ./setup.sh [--no-services]  # Linux/macOS
-   # oder
-   python3 setup.py # Windows oder alternativ
+   # or / oder
+   python3 setup.py            # Windows
    ```
-   Die Werte werden in der Datei `.env` gespeichert und können dort später
-   angepasst werden.
-3. **Dienste starten** – auf Linux richten die Skripte automatisch
-   systemd-Dienste ein und starten sie. Auf anderen Systemen startest du
-   Bot und GUI manuell:
+   Das Skript legt eine virtuelle Umgebung an, installiert alle Abhängigkeiten und fragt Werte wie `BOT_TOKEN`, `ADMIN_USER`, `ADMIN_PASS`, `SECRET_KEY` usw. ab. Die Antworten werden in `.env` gespeichert.
+3. **Dienste starten / Start the services**
    ```bash
    python3 bot.py
    python3 admin_app.py
    ```
+
+   Auf Linux richten die Skripte systemd-Dienste ein:
+
    Wenn du das Setup-Skript übersprungen hast oder die Programme außerhalb
    des Verzeichnisses `venv` ausführst, installiere zunächst die Abhängigkeiten
    mit:
@@ -149,7 +132,7 @@ This project contains a simple Telegram bot and an admin interface for managing 
 * Manage products with name, price and description.
 * Manage shipping costs per country.
 * After selecting the country the bot shows the shipping fee.
-=======
+
 
 * The GUI runs locally on port 8000.
 * New `/tor` route allows controlling Tor using the `ENABLE_TOR`,
@@ -195,10 +178,14 @@ Python 3 is required. On some systems the executable is named `python3`.
    ./venv/bin/pip install -r requirements.txt
    ```
    The scripts create a virtual environment under `venv`, install the dependencies and write your values to `.env`. On Linux, systemd units are enabled immediately using:
+
    ```bash
    systemctl --user daemon-reload
    systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
    ```
+
+
+Nach dem Start ist der Bot über Telegram erreichbar und die Admin-GUI unter [http://localhost:8000](http://localhost:8000). Die Skripte schreiben Logdateien `bot.log` und `admin.log`. Nach dem Setup wird außerdem eine Datei `onion_url.txt` mit der Tor-Adresse erzeugt, sofern `tor` mit einem erreichbaren ControlPort (Standard `9051`) läuft.
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
 Log files `bot.log` and `admin.log` are created to help with troubleshooting.
@@ -207,44 +194,36 @@ service files.
 
 The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere. Ensure the `tor` service is running with a reachable control port (default `9051`), otherwise you will see `Tor onion address not found`.
 
-### Verify your setup
 
-After installing all requirements you can run
+### Tests
 
 ```bash
 pytest
 ```
 
-to ensure everything works as expected.
+## Umgebungsvariablen / Environment Variables
 
-## Environment Variables
-
-The systemd services load their configuration from the `.env` file. An example file `.env.example` is included. It must contain the following variables:
+Die Dienste lesen ihre Konfiguration aus `.env`. The following variables are supported:
 
 * `BOT_TOKEN` – Telegram token for the bot
-* `ADMIN_USER` – Username for the admin login
-* `ADMIN_PASS_HASH` – hashed password for the admin login
-* `SECRET_KEY` – Flask `SECRET_KEY` for the web interface
-* `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
-* `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
-* `ADMIN_PORT` – Port of the admin GUI (default: `8000`)
+* `ADMIN_USER` – admin username
+* `ADMIN_PASS_HASH` – hashed admin password
+* `SECRET_KEY` – Flask secret key
+* `DATABASE_URL` – database URL (default `sqlite:///db.sqlite3`)
+* `ADMIN_HOST` – host for the admin GUI (default `127.0.0.1`)
+* `ADMIN_PORT` – port for the admin GUI (default `8000`)
 * `WEBHOOK_URL` – HTTPS URL for Telegram webhooks (optional)
-* `WEBHOOK_HOST` – Hostname/IP for the webhook server (default: `0.0.0.0`)
-* `WEBHOOK_PORT` – Port for the webhook server (default: `8080`)
-* `WEBHOOK_PATH` – Path for the webhook route (default: `/webhook`)
-* `ENABLE_TOR` – set to `1` to expose the admin GUI via Tor
-* `TOR_CONTROL_HOST` – host of the Tor control port (default: `127.0.0.1`)
-* `TOR_CONTROL_PORT` – port of the Tor control port (default: `9051`)
+* `WEBHOOK_HOST` – host for the webhook server (default `0.0.0.0`)
+* `WEBHOOK_PORT` – port for the webhook server (default `8080`)
+* `WEBHOOK_PATH` – path for the webhook route (default `/webhook`)
+* `ENABLE_TOR` – set `1` to expose the GUI via Tor
+* `TOR_CONTROL_HOST` – Tor control host (default `127.0.0.1`)
+* `TOR_CONTROL_PORT` – Tor control port (default `9051`)
 * `TOR_CONTROL_PASS` – password for the Tor control port
-* `ONION_FILE` – file where the generated Tor URL is stored (default: `onion_url.txt`)
+* `ONION_FILE` – file storing the generated Tor URL (default `onion_url.txt`)
 
+Diese Werte sollten in einer `.env`-Datei gespeichert werden und dürfen nicht ins Repository eingecheckt werden. Wird `ADMIN_HOST` auf `0.0.0.0` gesetzt oder der Tor-Dienst aktiviert, ist die Admin-Oberfläche von außen erreichbar. Verwende ein starkes Passwort und beschränke den Zugriff wenn möglich.
 
-You can store these values in a `.env` file. This file must **not** be committed to the repository.
+## Lizenz / License
 
-## Tests
-
-Unit tests are executed using pytest. After installing the dependencies you can run them directly with `pytest`.
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+Dieses Projekt steht unter der MIT-Lizenz. This project is licensed under the MIT License. Siehe [LICENSE](LICENSE) for details.
