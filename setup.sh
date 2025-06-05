@@ -43,7 +43,16 @@ prompt_var() {
 
 prompt_var BOT_TOKEN "BOT_TOKEN"
 prompt_var ADMIN_USER "Admin username"
+
 prompt_var ADMIN_PASS "Admin password"
+HASHED=$(python3 - <<'EOF'
+import bcrypt, os
+print(bcrypt.hashpw(os.environ['ADMIN_PASS'].encode(), bcrypt.gensalt()).decode())
+EOF
+)
+write_env ADMIN_PASS_HASH "$HASHED"
+unset ADMIN_PASS
+
 prompt_var SECRET_KEY "Flask SECRET_KEY"
 
 echo "[Unit]" > bot.service

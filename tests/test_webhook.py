@@ -1,7 +1,5 @@
 import importlib
-import os
 import sys
-import asyncio
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -13,9 +11,11 @@ from aiohttp import web
 def test_webhook_mode(monkeypatch):
     monkeypatch.setenv('BOT_TOKEN', '123456:TEST')
     monkeypatch.setenv('WEBHOOK_URL', 'https://example.com/hook')
+    import bcrypt
     monkeypatch.setenv('SECRET_KEY', 'test')
     monkeypatch.setenv('ADMIN_USER', 'admin')
-    monkeypatch.setenv('ADMIN_PASS', 'pass')
+    monkeypatch.setenv('ADMIN_PASS_HASH', bcrypt.hashpw(b'pass', bcrypt.gensalt()).decode())
+    monkeypatch.setenv('FLASK_ENV', 'test')
 
     calls = {}
 

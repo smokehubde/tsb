@@ -9,8 +9,10 @@ def test_admin_login(tmp_path, monkeypatch):
     db_path = tmp_path / 'test.sqlite3'
     monkeypatch.setenv('DATABASE_URL', f'sqlite:///{db_path}')
     monkeypatch.setenv('SECRET_KEY', 'test')
+    import bcrypt
     monkeypatch.setenv('ADMIN_USER', 'admin')
-    monkeypatch.setenv('ADMIN_PASS', 'pass')
+    monkeypatch.setenv('ADMIN_PASS_HASH', bcrypt.hashpw(b'pass', bcrypt.gensalt()).decode())
+    monkeypatch.setenv('FLASK_ENV', 'test')
 
     if 'db' in importlib.sys.modules:
         importlib.reload(importlib.import_module('db'))
