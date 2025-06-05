@@ -160,15 +160,17 @@ Python 3 is required. On some systems the executable is named `python3`.
    python3 setup.py # Windows or alternative
    ```
    The answers are stored in `.env` and can be modified later.
-3. **Start the services** – on Linux the scripts automatically configure and start systemd units. On other systems run the programs manually:
+3. **Start the services** – on Linux the scripts automatically configure and start
+   systemd units. On other systems run the programs manually. Activate the
+   virtual environment first so the installed dependencies are found:
    ```bash
-   python3 bot.py
-   python3 admin_app.py
+   source venv/bin/activate
+   python bot.py
+   python admin_app.py
    ```
-   If you skipped the setup script or run the programs outside the `venv`
-   directory, install the dependencies beforehand using:
+   If you skipped the setup script, install the requirements manually:
    ```bash
-   pip install -r requirements.txt
+   ./venv/bin/pip install -r requirements.txt
    ```
    The scripts create a virtual environment under `venv`, install the dependencies and write your values to `.env`. On Linux, systemd units are enabled immediately using:
    ```bash

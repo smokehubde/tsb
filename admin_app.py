@@ -21,6 +21,7 @@ from flask_limiter.util import get_remote_address
 import bcrypt
 from dotenv import load_dotenv
 
+
 from config import load_env, setup_logging
 from db import create_app, db, Product, ShippingCost
 
