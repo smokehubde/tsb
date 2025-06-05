@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import (
     request,
     redirect,
@@ -7,8 +8,9 @@ from flask import (
     session,
     render_template_string,
 )
+from dotenv import load_dotenv
 
-ADMIN_HOST = os.getenv("ADMIN_HOST", "127.0.0.1")
+ADMIN_HOST = os.getenv("ADMIN_HOST", "0.0.0.0")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
 ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env"))
 
@@ -27,20 +29,20 @@ def load_env(path: str | None = None) -> None:
         return
 
     override = path is not None or "ENV_FILE" in os.environ
-
-    with open(env_path) as f:
-        for line in f:
-            if "=" in line and not line.strip().startswith("#"):
-                key, value = line.strip().split("=", 1)
-                if override:
-                    os.environ[key] = value
-                else:
-                    os.environ.setdefault(key, value)
+    load_dotenv(env_path, override=override)
 
 from db import create_app, db, Product, ShippingCost
 
 load_env()
 app = create_app()
+logging.basicConfig(level=logging.INFO)
+app.logger.setLevel(logging.INFO)
+
+
+@app.errorhandler(Exception)
+def handle_exception(error):
+    app.logger.exception("Unhandled error: %s", error)
+    return "Internal Server Error", 500
 
 
 def update_env_var(name: str, value: str) -> None:
@@ -218,7 +220,10 @@ def main():
     onion_service = None
     ctx = None
     if os.getenv("ENABLE_TOR", "0") in {"1", "true", "yes"}:
+        tor_dir = "/var/lib/tor/tsb_admin"
         try:
+            if not os.path.exists(tor_dir):
+                os.makedirs(tor_dir, mode=0o700, exist_ok=True)
             from tor_service import hidden_service
             ctx = hidden_service(ADMIN_PORT)
             onion_service = ctx.__enter__()

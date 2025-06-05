@@ -139,10 +139,6 @@ async def set_country(message: types.Message, state: FSMContext):
         shipping_cost = cost_entry.cost if cost_entry else None
         session.commit()
 
-=======
-        lang = user.language or 'en'
-        session.commit()
-
     await state.clear()
     if shipping_cost is not None:
         await message.answer(f"Shipping to {country}: {shipping_cost} €")
