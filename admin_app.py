@@ -1,5 +1,11 @@
-import os
+# -*- coding: utf-8 -*-
+"""Flask administration interface for the Telegram Shop Bot."""
+
+from __future__ import annotations
+
+import argparse
 import logging
+import os
 from flask import (
     request,
     redirect,
@@ -10,37 +16,21 @@ from flask import (
 )
 from dotenv import load_dotenv
 
+from config import load_env, setup_logging
+from db import create_app, db, Product, ShippingCost
+
 ADMIN_HOST = os.getenv("ADMIN_HOST", "0.0.0.0")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
 ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env"))
 
 
-def load_env(path: str | None = None) -> None:
-    """Load variables from a .env file into ``os.environ``.
-
-    When a path is given or ``ENV_FILE`` is explicitly set, environment
-    variables from that file override existing ones. Otherwise, values are only
-    added if missing. This mirrors the behaviour in ``bot.load_env`` and allows
-    tests to control the configuration reliably.
-    """
-
-    env_path = path or ENV_FILE
-    if not os.path.exists(env_path):
-        return
-
-    override = path is not None or "ENV_FILE" in os.environ
-    load_dotenv(env_path, override=override)
-
-from db import create_app, db, Product, ShippingCost
-
 load_env()
 app = create_app()
-logging.basicConfig(level=logging.INFO)
-app.logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @app.errorhandler(Exception)
-def handle_exception(error):
+def handle_exception(error: Exception):
     app.logger.exception("Unhandled error: %s", error)
     return "Internal Server Error", 500
 
@@ -63,93 +53,97 @@ def update_env_var(name: str, value: str) -> None:
     with open(ENV_FILE, "w") as f:
         f.writelines(lines)
 
+
 def login_required(func):
     from functools import wraps
 
     @wraps(func)
     def wrapped(*args, **kwargs):
-        if not session.get('logged_in'):
-            return redirect(url_for('login'))
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
         return func(*args, **kwargs)
+
     return wrapped
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
-    if request.method == 'POST':
-        if (request.form.get('username') == os.getenv('ADMIN_USER') and
-                request.form.get('password') == os.getenv('ADMIN_PASS')):
-            session['logged_in'] = True
-            return redirect(url_for('product_list'))
+    if request.method == "POST":
+        if (
+            request.form.get("username") == os.getenv("ADMIN_USER")
+            and request.form.get("password") == os.getenv("ADMIN_PASS")
+        ):
+            session["logged_in"] = True
+            return redirect(url_for("product_list"))
         error = "Invalid credentials"
-    return render_template('login.html', error=error)
+    return render_template("login.html", error=error)
 
 
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
     session.clear()
-    return redirect(url_for('login'))
+    return redirect(url_for("login"))
 
 
-@app.route('/')
+@app.route("/")
 @login_required
 def product_list():
     products = Product.query.all()
-    return render_template('product_list.html', products=products)
+    return render_template("product_list.html", products=products)
 
 
-@app.route('/add', methods=['GET', 'POST'])
+@app.route("/add", methods=["GET", "POST"])
 @login_required
 def add_product():
-    if request.method == 'POST':
-        name = request.form['name']
-        price = float(request.form['price'])
-        desc = request.form['description']
+    if request.method == "POST":
+        name = request.form["name"]
+        price = float(request.form["price"])
+        desc = request.form["description"]
         db.session.add(Product(name=name, price=price, description=desc))
         db.session.commit()
-        return redirect(url_for('product_list'))
-    return render_template('add_product.html')
+        return redirect(url_for("product_list"))
+    return render_template("add_product.html")
 
 
-@app.route('/edit/<int:pid>', methods=['GET', 'POST'])
+@app.route("/edit/<int:pid>", methods=["GET", "POST"])
 @login_required
-def edit_product(pid):
+def edit_product(pid: int):
     product = Product.query.get_or_404(pid)
-    if request.method == 'POST':
-        product.name = request.form['name']
-        product.price = float(request.form['price'])
-        product.description = request.form['description']
+    if request.method == "POST":
+        product.name = request.form["name"]
+        product.price = float(request.form["price"])
+        product.description = request.form["description"]
         db.session.commit()
-        return redirect(url_for('product_list'))
-    return render_template('edit_product.html', p=product)
+        return redirect(url_for("product_list"))
+    return render_template("edit_product.html", p=product)
 
 
-@app.route('/delete/<int:pid>')
+@app.route("/delete/<int:pid>")
 @login_required
-def delete_product(pid):
+def delete_product(pid: int):
     product = Product.query.get_or_404(pid)
     db.session.delete(product)
     db.session.commit()
-    return redirect(url_for('product_list'))
+    return redirect(url_for("product_list"))
 
 
-@app.route('/shipping', methods=['GET', 'POST'])
+@app.route("/shipping", methods=["GET", "POST"])
 @login_required
 def shipping():
     """Manage shipping costs per country."""
     message = None
-    if request.method == 'POST':
-        country = request.form.get('country', '').strip()
-        cost_val = request.form.get('cost', '').strip()
+    if request.method == "POST":
+        country = request.form.get("country", "").strip()
+        cost_val = request.form.get("cost", "").strip()
         if not country:
-            message = 'Country required'
+            message = "Country required"
         else:
             try:
                 cost = float(cost_val)
             except ValueError:
-                message = 'Invalid cost'
+                message = "Invalid cost"
             else:
                 entry = ShippingCost.query.filter_by(country=country).first()
                 if entry:
@@ -157,51 +151,52 @@ def shipping():
                 else:
                     db.session.add(ShippingCost(country=country, cost=cost))
                 db.session.commit()
-                message = 'Saved'
+                message = "Saved"
     costs = ShippingCost.query.order_by(ShippingCost.country).all()
-    return render_template('shipping.html', costs=costs, message=message)
+    return render_template("shipping.html", costs=costs, message=message)
 
 
-@app.route('/shipping/delete/<int:sid>')
+@app.route("/shipping/delete/<int:sid>")
 @login_required
-def delete_shipping(sid):
+def delete_shipping(sid: int):
     entry = ShippingCost.query.get_or_404(sid)
     db.session.delete(entry)
     db.session.commit()
-    return redirect(url_for('shipping'))
+    return redirect(url_for("shipping"))
 
 
-@app.route('/tor', methods=['GET', 'POST'])
+@app.route("/tor", methods=["GET", "POST"])
 @login_required
 def tor_settings():
     """Display and update Tor control settings."""
     message = None
-    enabled = os.getenv('ENABLE_TOR', '0') in {'1', 'true', 'yes'}
-    host = os.getenv('TOR_CONTROL_HOST', '127.0.0.1')
-    port = os.getenv('TOR_CONTROL_PORT', '9051')
-    password = os.getenv('TOR_CONTROL_PASS', '')
-    if request.method == 'POST':
-        enabled = request.form.get('enabled') == 'on'
-        host = request.form.get('host', '').strip()
-        port_input = request.form.get('port', '').strip()
-        password = request.form.get('password', '')
+    enabled = os.getenv("ENABLE_TOR", "0") in {"1", "true", "yes"}
+    host = os.getenv("TOR_CONTROL_HOST", "127.0.0.1")
+    port = os.getenv("TOR_CONTROL_PORT", "9051")
+    password = os.getenv("TOR_CONTROL_PASS", "")
+    if request.method == "POST":
+        enabled = request.form.get("enabled") == "on"
+        host = request.form.get("host", "").strip()
+        port_input = request.form.get("port", "").strip()
+        password = request.form.get("password", "")
         if not host:
-            message = 'Host required'
+            message = "Host required"
         else:
             try:
                 port_val = int(port_input)
                 if not 1 <= port_val <= 65535:
                     raise ValueError
             except ValueError:
-                message = 'Invalid port'
+                message = "Invalid port"
             else:
-                update_env_var('ENABLE_TOR', '1' if enabled else '0')
-                update_env_var('TOR_CONTROL_HOST', host)
-                update_env_var('TOR_CONTROL_PORT', str(port_val))
-                update_env_var('TOR_CONTROL_PASS', password)
+                update_env_var("ENABLE_TOR", "1" if enabled else "0")
+                update_env_var("TOR_CONTROL_HOST", host)
+                update_env_var("TOR_CONTROL_PORT", str(port_val))
+                update_env_var("TOR_CONTROL_PASS", password)
                 port = str(port_val)
-                message = 'Settings updated'
-    return render_template_string('''
+                message = "Settings updated"
+    return render_template_string(
+        """
         {% if message %}<p>{{ message }}</p>{% endif %}
         <form method="post">
             <label>Enable Tor
@@ -212,11 +207,23 @@ def tor_settings():
             <input name="password" type="text" value="{{ password }}" placeholder="Password">
             <button type="submit">Save</button>
         </form>
-    ''', enabled=enabled, host=host, port=port, password=password, message=message)
+        """,
+        enabled=enabled,
+        host=host,
+        port=port,
+        password=password,
+        message=message,
+    )
 
 
-def main():
-    """Start the admin web app and optionally expose it as a Tor hidden service."""
+def main(argv: list[str] | None = None) -> None:
+    """Start the admin web app and optionally expose a Tor hidden service."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"))
+    parser.add_argument("--host", default=ADMIN_HOST)
+    parser.add_argument("--port", type=int, default=ADMIN_PORT)
+    args = parser.parse_args(argv)
+    setup_logging(getattr(logging, args.log_level.upper(), logging.INFO), "admin.log")
     onion_service = None
     ctx = None
     if os.getenv("ENABLE_TOR", "0") in {"1", "true", "yes"}:
@@ -225,20 +232,21 @@ def main():
             if not os.path.exists(tor_dir):
                 os.makedirs(tor_dir, mode=0o700, exist_ok=True)
             from tor_service import hidden_service
-            ctx = hidden_service(ADMIN_PORT)
+
+            ctx = hidden_service(args.port)
             onion_service = ctx.__enter__()
-            print(f"Tor hidden service available at http://{onion_service}")
+            logger.info("Tor hidden service available at http://%s", onion_service)
         except Exception as exc:  # pragma: no cover - Tor optional in tests
-            print(f"Failed to start Tor hidden service: {exc}")
+            logger.error("Failed to start Tor hidden service: %s", exc)
             onion_service = None
             ctx = None
 
     try:
-        app.run(host=ADMIN_HOST, port=ADMIN_PORT)
+        app.run(host=args.host, port=args.port)
     finally:
         if onion_service is not None and ctx is not None:
             ctx.__exit__(None, None, None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

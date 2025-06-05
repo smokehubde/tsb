@@ -1,53 +1,41 @@
+# -*- coding: utf-8 -*-
+"""Telegram Shop Bot entry point and handlers."""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import logging
 import os
-from pathlib import Path
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-import asyncio
-from aiohttp import web
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram import F
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiohttp import web
 
+from config import load_env, setup_logging
 from db import create_app, SessionLocal, User, ShippingCost
 
 
-def load_env(path: str | None = None) -> None:
-    """Load variables from a .env file into ``os.environ``.
-
-    If a path is explicitly provided or the ``ENV_FILE`` environment variable is
-    set, variables from that file override existing ones. Otherwise values are
-    only added when they are missing. This allows tests to supply their own
-    environment file and ensures the provided values take precedence over a
-    globally defined ``BOT_TOKEN``.
-    """
-
-    env_path = path or os.getenv("ENV_FILE", str(Path(__file__).with_name(".env")))
-    if not os.path.exists(env_path):
-        return
-
-    override = path is not None or "ENV_FILE" in os.environ
-
-    with open(env_path) as f:
-        for line in f:
-            if "=" in line and not line.strip().startswith("#"):
-                key, value = line.strip().split("=", 1)
-                if override:
-                    os.environ[key] = value
-                else:
-                    os.environ.setdefault(key, value)
-
-
 class LangStates(StatesGroup):
+    """Conversation state for language selection."""
+
     choose = State()
 
 
 class CountryStates(StatesGroup):
+    """Conversation state for country selection."""
+
     choose = State()
 
 
-def get_bot_token():
+logger = logging.getLogger(__name__)
+
+
+def get_bot_token() -> str:
+    """Return the bot token from the environment."""
     load_env()
     token = os.getenv("BOT_TOKEN")
     if not token:
@@ -60,25 +48,23 @@ dp = Dispatcher()
 
 
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message, state: FSMContext):
+async def cmd_start(message: types.Message, state: FSMContext) -> None:
+    """Handle the /start command."""
     with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
         if not user or not user.language:
-            kb = ReplyKeyboardMarkup(keyboard=[
-                [KeyboardButton(text="Deutsch"), KeyboardButton(text="English")]
-            ], resize_keyboard=True)
+            kb = ReplyKeyboardMarkup(
+                keyboard=[[KeyboardButton(text="Deutsch"), KeyboardButton(text="English")]],
+                resize_keyboard=True,
+            )
             await message.answer(
-                "Choose your language / Wähle deine Sprache", reply_markup=kb
+                "Choose your language / W\xe4hle deine Sprache", reply_markup=kb
             )
             await state.set_state(LangStates.choose)
             return
 
         if not user.country:
-            countries = (
-                session.query(ShippingCost.country)
-                .order_by(ShippingCost.country)
-                .all()
-            )
+            countries = session.query(ShippingCost.country).order_by(ShippingCost.country).all()
             if countries:
                 kb = ReplyKeyboardMarkup(
                     keyboard=[[KeyboardButton(text=c.country)] for c in countries],
@@ -88,12 +74,13 @@ async def cmd_start(message: types.Message, state: FSMContext):
                 await state.set_state(CountryStates.choose)
                 return
 
-        greeting = "W\u00e4hle ein Produkt" if user.language == "de" else "Choose a product"
+        greeting = "W\xe4hle ein Produkt" if user.language == "de" else "Choose a product"
         await message.answer(greeting)
 
 
 @dp.message(LangStates.choose)
-async def set_language(message: types.Message, state: FSMContext):
+async def set_language(message: types.Message, state: FSMContext) -> None:
+    """Store the user's chosen language."""
     lang = "de" if message.text.lower().startswith("de") else "en"
     with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
@@ -104,9 +91,7 @@ async def set_language(message: types.Message, state: FSMContext):
             user.language = lang
         session.commit()
 
-        countries = (
-            session.query(ShippingCost.country).order_by(ShippingCost.country).all()
-        )
+        countries = session.query(ShippingCost.country).order_by(ShippingCost.country).all()
 
     if countries:
         kb = ReplyKeyboardMarkup(
@@ -117,12 +102,13 @@ async def set_language(message: types.Message, state: FSMContext):
         await message.answer("Choose country", reply_markup=kb)
     else:
         await state.clear()
-        greeting = "W\u00e4hle ein Produkt" if lang == "de" else "Choose a product"
+        greeting = "W\xe4hle ein Produkt" if lang == "de" else "Choose a product"
         await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 
 @dp.message(CountryStates.choose)
-async def set_country(message: types.Message, state: FSMContext):
+async def set_country(message: types.Message, state: FSMContext) -> None:
+    """Store the chosen shipping country."""
     country = message.text.strip()
     with SessionLocal() as session:
         user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
@@ -133,21 +119,23 @@ async def set_country(message: types.Message, state: FSMContext):
             user.country = country
 
         lang = user.language or "en"
-        cost_entry = (
-            session.query(ShippingCost).filter_by(country=country).first()
-        )
+        cost_entry = session.query(ShippingCost).filter_by(country=country).first()
         shipping_cost = cost_entry.cost if cost_entry else None
         session.commit()
 
     await state.clear()
     if shipping_cost is not None:
-        await message.answer(f"Shipping to {country}: {shipping_cost} €")
-    greeting = "W\u00e4hle ein Produkt" if lang == "de" else "Choose a product"
+        await message.answer(f"Shipping to {country}: {shipping_cost} \u20ac")
+    greeting = "W\xe4hle ein Produkt" if lang == "de" else "Choose a product"
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 
-def main():
-    """Start the bot either via webhook or long polling."""
+def main(argv: list[str] | None = None) -> None:
+    """Start the bot using webhook or long polling."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--log-level", default=os.getenv("LOG_LEVEL", "INFO"))
+    args = parser.parse_args([] if argv is None else argv)
+    setup_logging(getattr(logging, args.log_level.upper(), logging.INFO), "bot.log")
     create_app()
     webhook_url = os.getenv("WEBHOOK_URL")
     if webhook_url:
@@ -163,12 +151,14 @@ def main():
         SimpleRequestHandler(dp, bot).register(app, path=webhook_path)
         setup_application(app, dp, bot=bot)
 
-        async def on_shutdown(app: web.Application):
+        async def on_shutdown(app: web.Application) -> None:
             await bot.delete_webhook()
 
         app.on_shutdown.append(on_shutdown)
+        logging.info("Starting webhook on %s:%s", webhook_host, webhook_port)
         web.run_app(app, host=webhook_host, port=webhook_port, loop=loop)
     else:
+        logging.info("Starting polling mode")
         dp.run_polling(bot)
 
 
