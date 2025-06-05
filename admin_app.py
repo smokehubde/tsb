@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+from datetime import timedelta
 from flask import (
     request,
     redirect,
@@ -14,6 +15,10 @@ from flask import (
     session,
     render_template_string,
 )
+from flask_wtf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import bcrypt
 from dotenv import load_dotenv
 
 from config import load_env, setup_logging
@@ -27,6 +32,15 @@ ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env")
 load_env()
 app = create_app()
 logger = logging.getLogger(__name__)
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
+    minutes=int(os.getenv("SESSION_TIMEOUT_MINUTES", "30"))
+)
+app.config["TESTING"] = os.getenv("FLASK_ENV") == "test"
+if app.config["TESTING"]:
+    app.config["WTF_CSRF_ENABLED"] = False
+
+csrf = CSRFProtect(app)
+limiter = Limiter(get_remote_address, app=app, enabled=not app.config["TESTING"])
 
 
 @app.errorhandler(Exception)
@@ -67,15 +81,29 @@ def login_required(func):
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     error = None
     if request.method == "POST":
-        if (
-            request.form.get("username") == os.getenv("ADMIN_USER")
-            and request.form.get("password") == os.getenv("ADMIN_PASS")
-        ):
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        stored_hash = os.getenv("ADMIN_PASS_HASH")
+        plain_pass = os.getenv("ADMIN_PASS")
+        valid = False
+        if username == os.getenv("ADMIN_USER"):
+            if stored_hash:
+                try:
+                    valid = bcrypt.checkpw(password.encode(), stored_hash.encode())
+                except ValueError:
+                    valid = False
+            elif plain_pass:
+                valid = password == plain_pass
+        if valid:
             session["logged_in"] = True
+            session.permanent = True
+            logger.info("Admin login from %s", request.remote_addr)
             return redirect(url_for("product_list"))
+        logger.warning("Failed login from %s", request.remote_addr)
         error = "Invalid credentials"
     return render_template("login.html", error=error)
 
