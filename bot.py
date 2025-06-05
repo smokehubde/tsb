@@ -10,7 +10,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram import F
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
-from db import create_app, SessionLocal, User
+from db import create_app, SessionLocal, User, ShippingCost
 
 
 def load_env(path: str | None = None) -> None:
@@ -43,6 +43,10 @@ class LangStates(StatesGroup):
     choose = State()
 
 
+class CountryStates(StatesGroup):
+    choose = State()
+
+
 def get_bot_token():
     load_env()
     token = os.getenv("BOT_TOKEN")
@@ -63,11 +67,29 @@ async def cmd_start(message: types.Message, state: FSMContext):
             kb = ReplyKeyboardMarkup(keyboard=[
                 [KeyboardButton(text="Deutsch"), KeyboardButton(text="English")]
             ], resize_keyboard=True)
-            await message.answer("Choose your language / Wähle deine Sprache", reply_markup=kb)
+            await message.answer(
+                "Choose your language / Wähle deine Sprache", reply_markup=kb
+            )
             await state.set_state(LangStates.choose)
-        else:
-            greeting = "W\u00e4hle ein Produkt" if user.language == "de" else "Choose a product"
-            await message.answer(greeting)
+            return
+
+        if not user.country:
+            countries = (
+                session.query(ShippingCost.country)
+                .order_by(ShippingCost.country)
+                .all()
+            )
+            if countries:
+                kb = ReplyKeyboardMarkup(
+                    keyboard=[[KeyboardButton(text=c.country)] for c in countries],
+                    resize_keyboard=True,
+                )
+                await message.answer("Choose country", reply_markup=kb)
+                await state.set_state(CountryStates.choose)
+                return
+
+        greeting = "W\u00e4hle ein Produkt" if user.language == "de" else "Choose a product"
+        await message.answer(greeting)
 
 
 @dp.message(LangStates.choose)
@@ -81,7 +103,44 @@ async def set_language(message: types.Message, state: FSMContext):
         else:
             user.language = lang
         session.commit()
+
+        countries = (
+            session.query(ShippingCost.country).order_by(ShippingCost.country).all()
+        )
+
+    if countries:
+        kb = ReplyKeyboardMarkup(
+            keyboard=[[KeyboardButton(text=c.country)] for c in countries],
+            resize_keyboard=True,
+        )
+        await state.set_state(CountryStates.choose)
+        await message.answer("Choose country", reply_markup=kb)
+    else:
+        await state.clear()
+        greeting = "W\u00e4hle ein Produkt" if lang == "de" else "Choose a product"
+        await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
+
+
+@dp.message(CountryStates.choose)
+async def set_country(message: types.Message, state: FSMContext):
+    country = message.text.strip()
+    with SessionLocal() as session:
+        user = session.query(User).filter_by(telegram_id=message.from_user.id).first()
+        if not user:
+            user = User(telegram_id=message.from_user.id, country=country)
+            session.add(user)
+        else:
+            user.country = country
+        lang = user.language or "en"
+        cost_entry = (
+            session.query(ShippingCost).filter_by(country=country).first()
+        )
+        shipping_cost = cost_entry.cost if cost_entry else None
+        session.commit()
+
     await state.clear()
+    if shipping_cost is not None:
+        await message.answer(f"Shipping to {country}: {shipping_cost} €")
     greeting = "W\u00e4hle ein Produkt" if lang == "de" else "Choose a product"
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 

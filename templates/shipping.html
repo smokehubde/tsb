@@ -1,0 +1,13 @@
+<h2>Shipping Costs</h2>
+{% if message %}<p>{{ message }}</p>{% endif %}
+<form method="post">
+    <input name="country" placeholder="Country">
+    <input name="cost" type="number" step="0.01" placeholder="Cost">
+    <button type="submit">Save</button>
+</form>
+<ul>
+{% for c in costs %}
+    <li>{{ c.country }} - {{ c.cost }} € <a href="{{ url_for('delete_shipping', sid=c.id) }}">Delete</a></li>
+{% endfor %}
+</ul>
+<a href="{{ url_for('product_list') }}">Back</a>
