@@ -53,8 +53,8 @@ Kommando `python3`.
    systemd-Dienste ein und starten sie. Auf anderen Systemen startest du
    Bot und GUI manuell:
    ```bash
-   python3 bot.py
-   python3 admin_app.py
+   python3 run_bot.py
+   python3 run_admin.py
    ```
    Wenn du das Setup-Skript übersprungen hast oder die Programme außerhalb
    des Verzeichnisses `venv` ausführst, installiere zunächst die Abhängigkeiten
@@ -74,8 +74,8 @@ systemctl --user enable --now "$REPO_DIR/bot.service" "$REPO_DIR/gui.service"
 
 Sollte `systemctl --user` nicht verfügbar sein, starte Bot und GUI manuell:
 ```bash
-python3 bot.py
-python3 admin_app.py
+python3 run_bot.py
+python3 run_admin.py
 ```
 
 
@@ -85,7 +85,9 @@ Nach dem Start ist der Bot über Telegram erreichbar (Token per
 Die Skripte schreiben Logdateien `bot.log` und `admin.log`, die bei Fehlern
 hilfreich sind.
 Nach dem Setup wird zudem eine Datei `onion_url.txt` mit der Tor-Adresse erzeugt,
-die im Terminal ausgegeben wird.
+die im Terminal ausgegeben wird. Stelle sicher, dass der Dienst `tor` läuft und
+ein ControlPort (standardmäßig `9051`) erreichbar ist, sonst erscheint die Meldung
+`Tor onion address not found`.
 
 ### So prüfst du dein Setup
 
@@ -184,8 +186,8 @@ Python 3 is required. On some systems the executable is named `python3`.
    virtual environment first so the installed dependencies are found:
    ```bash
    source venv/bin/activate
-   python bot.py
-   python admin_app.py
+   python run_bot.py
+   python run_admin.py
    ```
    If you skipped the setup script, install the requirements manually:
    ```bash
@@ -200,7 +202,7 @@ Python 3 is required. On some systems the executable is named `python3`.
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
 Log files `bot.log` and `admin.log` are created to help with troubleshooting.
 
-The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere.
+The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere. Ensure the `tor` service is running with a reachable control port (default `9051`), otherwise you will see `Tor onion address not found`.
 
 ### Verify your setup
 

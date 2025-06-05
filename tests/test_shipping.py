@@ -10,16 +10,18 @@ def test_shipping_admin(tmp_path, monkeypatch):
     monkeypatch.setenv('ENV_FILE', str(env_file))
     monkeypatch.setenv('DATABASE_URL', f'sqlite:///{tmp_path}/test.sqlite3')
     monkeypatch.setenv('SECRET_KEY', 'test')
-    import bcrypt
+    from werkzeug.security import generate_password_hash
     monkeypatch.setenv('ADMIN_USER', 'admin')
-    monkeypatch.setenv('ADMIN_PASS_HASH', bcrypt.hashpw(b'pass', bcrypt.gensalt()).decode())
+    monkeypatch.setenv('ADMIN_PASS_HASH', generate_password_hash('pass'))
     monkeypatch.setenv('FLASK_ENV', 'test')
 
-    if 'db' in importlib.sys.modules:
-        importlib.reload(importlib.import_module('db'))
-    if 'admin_app' in importlib.sys.modules:
-        importlib.reload(importlib.import_module('admin_app'))
-    admin_app = importlib.import_module('admin_app')
+    if 'models' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('models'))
+    if 'database' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('database'))
+    if 'admin' in importlib.sys.modules:
+        importlib.reload(importlib.import_module('admin'))
+    admin_app = importlib.import_module('admin')
     app = admin_app.app
     client = app.test_client()
 
@@ -28,7 +30,7 @@ def test_shipping_admin(tmp_path, monkeypatch):
     resp = client.post('/shipping', data={'country': 'DE', 'cost': '5.0'})
     assert resp.status_code == 200
 
-    from db import ShippingCost
+    from models import ShippingCost
     with app.app_context():
         entry = ShippingCost.query.filter_by(country='DE').first()
         assert entry is not None

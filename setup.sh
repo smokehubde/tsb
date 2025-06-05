@@ -70,8 +70,9 @@ prompt_var ADMIN_USER "Admin username"
 
 prompt_var ADMIN_PASS "Admin password"
 HASHED=$(python3 - <<'EOF'
-import bcrypt, os
-print(bcrypt.hashpw(os.environ['ADMIN_PASS'].encode(), bcrypt.gensalt()).decode())
+from werkzeug.security import generate_password_hash
+import os
+print(generate_password_hash(os.environ['ADMIN_PASS']))
 EOF
 )
 write_env ADMIN_PASS_HASH "$HASHED"
@@ -90,8 +91,7 @@ prompt_var TOR_CONTROL_HOST "Tor control host" "127.0.0.1"
 prompt_var TOR_CONTROL_PORT "Tor control port" "9051"
 prompt_var TOR_CONTROL_PASS "Tor control password"
 
-# enable Tor by default and configure the file containing the onion URL
-write_env ENABLE_TOR 1
+# file containing the onion URL if Tor is enabled
 ONION_FILE="$REPO_DIR/onion_url.txt"
 write_env ONION_FILE "$ONION_FILE"
 
@@ -102,7 +102,7 @@ After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
 EnvironmentFile=$ENV_FILE
-ExecStart=$VENV_DIR/bin/python $REPO_DIR/bot.py
+ExecStart=$VENV_DIR/bin/python $REPO_DIR/run_bot.py
 Restart=always
 [Install]
 WantedBy=default.target
@@ -116,7 +116,7 @@ After=network.target
 [Service]
 WorkingDirectory=$REPO_DIR
 EnvironmentFile=$ENV_FILE
-ExecStart=$VENV_DIR/bin/python $REPO_DIR/admin_app.py
+ExecStart=$VENV_DIR/bin/python $REPO_DIR/run_admin.py
 Restart=always
 [Install]
 WantedBy=default.target
@@ -129,8 +129,8 @@ if [ "$CREATE_SERVICES" -eq 1 ]; then
     else
         echo "systemd not available, skipping service creation."
         echo "Start the services manually:" >&2
-        echo "  $VENV_DIR/bin/python $REPO_DIR/bot.py" >&2
-        echo "  $VENV_DIR/bin/python $REPO_DIR/admin_app.py" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/run_bot.py" >&2
+        echo "  $VENV_DIR/bin/python $REPO_DIR/run_admin.py" >&2
     fi
 else
     echo "Skipping service creation (--no-services)."
@@ -141,7 +141,7 @@ echo "Telegram Bot started. Configure it via Telegram."
 echo "Admin GUI available at http://localhost:8000"
 
 # wait for Tor hidden service information if available
-if [ -n "$ONION_FILE" ]; then
+if [ "$ENABLE_TOR" = "1" ] && [ -n "$ONION_FILE" ]; then
     echo -n "Waiting for Tor address..."
     for _ in {1..10}; do
         if [ -f "$ONION_FILE" ]; then

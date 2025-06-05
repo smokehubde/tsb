@@ -10,8 +10,10 @@ def test_create_product(tmp_path, monkeypatch):
     db_path = tmp_path / 'test.sqlite3'
     monkeypatch.setenv('DATABASE_URL', f'sqlite:///{db_path}')
     monkeypatch.setenv('SECRET_KEY', 'test')
-    importlib.reload(importlib.import_module('db'))
-    from db import create_app, SessionLocal, Product
+    importlib.reload(importlib.import_module('models'))
+    importlib.reload(importlib.import_module('database'))
+    from database import create_app
+    from models import SessionLocal, Product
     app = create_app()
     with app.app_context():
         with SessionLocal() as session:

@@ -16,7 +16,8 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_applicati
 from aiohttp import web
 
 from config import load_env, setup_logging
-from db import create_app, SessionLocal, User, ShippingCost
+from database import create_app
+from models import SessionLocal, User, ShippingCost, Product
 from currency import convert, COUNTRY_CURRENCY
 
 
@@ -40,6 +41,19 @@ GREETINGS = {
     "tr": "Bir \u00fcr\u00fcn se\u00e7",
     "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
 }
+
+
+async def send_product_list(message: types.Message) -> None:
+    """Send a simple list of available products."""
+    with SessionLocal() as session:
+        products = session.query(Product).order_by(Product.id).all()
+
+    if not products:
+        await message.answer("No products available")
+        return
+
+    lines = [f"{p.name} - {p.price:.2f} \u20ac" for p in products]
+    await message.answer("\n".join(lines))
 
 
 def get_bot_token() -> str:
@@ -91,6 +105,7 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
 
         greeting = GREETINGS.get(user.language, "Choose a product")
         await message.answer(greeting)
+        await send_product_list(message)
 
 
 @dp.message(LangStates.choose)
@@ -160,6 +175,7 @@ async def set_country(message: types.Message, state: FSMContext) -> None:
         await message.answer(f"Shipping to {country}: {cost_text}")
     greeting = GREETINGS.get(lang, "Choose a product")
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
+    await send_product_list(message)
 
 
 def main(argv: list[str] | None = None) -> None:

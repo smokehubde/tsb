@@ -12,20 +12,26 @@ from flask import (
     redirect,
     url_for,
     render_template,
-    session,
     render_template_string,
 )
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import bcrypt
-from dotenv import load_dotenv
+from flask_login import (
+    LoginManager,
+    login_required,
+    login_user,
+    logout_user,
+    UserMixin,
+)
+from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 from uuid import uuid4
 
 
 from config import load_env, setup_logging
-from db import create_app, db, Product, ShippingCost
+from database import create_app
+from models import db, Product, ShippingCost
 
 ADMIN_HOST = os.getenv("ADMIN_HOST", "0.0.0.0")
 ADMIN_PORT = int(os.getenv("ADMIN_PORT", "8000"))
@@ -34,6 +40,23 @@ ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env")
 
 load_env()
 app = create_app()
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
+
+class AdminUser(UserMixin):
+    """Simple admin user representation for Flask-Login."""
+
+    id = "admin"
+
+
+@login_manager.user_loader
+def load_user(user_id: str):
+    if user_id == os.getenv("ADMIN_USER"):
+        user = AdminUser()
+        user.id = user_id
+        return user
+    return None
 logger = logging.getLogger(__name__)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "images")
@@ -74,18 +97,6 @@ def update_env_var(name: str, value: str) -> None:
         f.writelines(lines)
 
 
-def login_required(func):
-    from functools import wraps
-
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        if not session.get("logged_in"):
-            return redirect(url_for("login"))
-        return func(*args, **kwargs)
-
-    return wrapped
-
-
 @app.route("/login", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def login():
@@ -94,19 +105,14 @@ def login():
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         stored_hash = os.getenv("ADMIN_PASS_HASH")
-        plain_pass = os.getenv("ADMIN_PASS")
         valid = False
-        if username == os.getenv("ADMIN_USER"):
-            if stored_hash:
-                try:
-                    valid = bcrypt.checkpw(password.encode(), stored_hash.encode())
-                except ValueError:
-                    valid = False
-            elif plain_pass:
-                valid = password == plain_pass
+        if username == os.getenv("ADMIN_USER") and stored_hash:
+            try:
+                valid = check_password_hash(stored_hash, password)
+            except ValueError:
+                valid = False
         if valid:
-            session["logged_in"] = True
-            session.permanent = True
+            login_user(AdminUser())
             logger.info("Admin login from %s", request.remote_addr)
             return redirect(url_for("product_list"))
         logger.warning("Failed login from %s", request.remote_addr)
@@ -117,7 +123,7 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
-    session.clear()
+    logout_user()
     return redirect(url_for("login"))
 
 
