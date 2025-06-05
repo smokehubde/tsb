@@ -33,15 +33,17 @@ Kommando `python3`.
    cd tsb
    ```
 2. **Setup-Skript ausführen** – wähle je nach Plattform zwischen dem
-   Bash-Skript oder der Python-Variante. Während der Ausführung wirst du
-   nach folgenden Informationen gefragt:
+   Bash-Skript oder der Python-Variante. Das Skript legt eine virtuelle
+   Umgebung an, installiert alle Abhängigkeiten und fragt die benötigten
+   Variablen ab:
    - `BOT_TOKEN` – das Telegram-Token deines Bots
    - `ADMIN_USER` – Benutzername für den Admin-Zugang
-   - `ADMIN_PASS` – Passwort für den Admin-Zugang
+   - `ADMIN_PASS` – Passwort für den Admin-Zugang (wird gehasht gespeichert)
    - `SECRET_KEY` – geheimer Schlüssel für Flask
+   - weitere optionale Einstellungen wie Datenbank-URL oder Webhook-Daten
 
    ```bash
-   ./setup.sh       # Linux/macOS
+   ./setup.sh [--no-services]  # Linux/macOS
    # oder
    python3 setup.py # Windows oder alternativ
    ```
@@ -149,13 +151,16 @@ Python 3 is required. On some systems the executable is named `python3`.
    cd tsb
    ```
 2. **Run the setup script** – choose the Bash or Python version depending on your platform. During setup you will be asked to enter:
+   The script creates a virtual environment, installs all dependencies and prompts for
+   the required values:
    - `BOT_TOKEN` – your Telegram bot token
    - `ADMIN_USER` – admin username
-   - `ADMIN_PASS` – admin password
+   - `ADMIN_PASS` – admin password (stored hashed)
    - `SECRET_KEY` – secret key for Flask
+   - optional settings like database URL or webhook parameters
 
    ```bash
-   ./setup.sh       # Linux/macOS
+   ./setup.sh [--no-services]  # Linux/macOS
    # or
    python3 setup.py # Windows or alternative
    ```
