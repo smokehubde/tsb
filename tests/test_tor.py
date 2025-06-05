@@ -46,3 +46,8 @@ def test_tor_settings(tmp_path, monkeypatch):
     assert 'TOR_CONTROL_HOST=127.0.0.1' in saved
     assert 'TOR_CONTROL_PORT=9052' in saved
     assert 'TOR_CONTROL_PASS=secret' in saved
+
+def test_check_tor_status_no_controller(monkeypatch):
+    import tor_service
+    monkeypatch.setattr(tor_service, "Controller", None)
+    assert tor_service.check_tor_status() is False

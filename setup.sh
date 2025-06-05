@@ -1,3 +1,4 @@
+# Setup script for the Telegram Shop Bot
 #!/bin/bash
 set -e
 

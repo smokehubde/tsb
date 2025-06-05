@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
+"""Environment setup helper for the Telegram Shop Bot."""
+
+from __future__ import annotations
+
+import argparse
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 from venv import EnvBuilder
 
@@ -9,7 +15,7 @@ VENV_DIR = REPO_DIR / "venv"
 ENV_FILE = REPO_DIR / ".env"
 
 
-def create_venv():
+def create_venv() -> tuple[Path, Path]:
     if not VENV_DIR.exists():
         builder = EnvBuilder(with_pip=True)
         builder.create(VENV_DIR)
@@ -22,12 +28,12 @@ def create_venv():
     return python_exe, pip_exe
 
 
-def install_deps(pip_exe):
+def install_deps(pip_exe: Path) -> None:
     subprocess.check_call([str(pip_exe), "install", "--upgrade", "pip"])
     subprocess.check_call([str(pip_exe), "install", "-r", str(REPO_DIR / "requirements.txt")])
 
 
-def prompt_env(var):
+def prompt_env(var: str) -> str:
     value = os.getenv(var)
     if not value:
         value = input(f"{var}: ")
@@ -35,8 +41,8 @@ def prompt_env(var):
     return value
 
 
-def load_env_file():
-    data = {}
+def load_env_file() -> dict[str, str]:
+    data: dict[str, str] = {}
     if ENV_FILE.exists():
         with ENV_FILE.open() as f:
             for line in f:
@@ -46,14 +52,13 @@ def load_env_file():
     return data
 
 
-def write_env_file(env):
+def write_env_file(env: dict[str, str]) -> None:
     with ENV_FILE.open("w") as f:
         for k, v in env.items():
             f.write(f"{k}={v}\n")
 
 
-def create_services(python_exe, env):
-    # Only Linux systemd services
+def create_services(python_exe: Path, env: dict[str, str]) -> None:
     if not sys.platform.startswith("linux"):
         print("Systemd services are only created on Linux. Start the scripts manually:")
         print(f"  {python_exe} bot.py")
@@ -61,11 +66,7 @@ def create_services(python_exe, env):
         return
 
     try:
-        subprocess.check_call(
-            ["systemctl", "--user", "--version"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        subprocess.check_call(["systemctl", "--user", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         (REPO_DIR / "bot.service").write_text(
             f"""[Unit]
@@ -96,16 +97,14 @@ WantedBy=default.target
         )
 
         subprocess.check_call(["systemctl", "--user", "daemon-reload"])
-        subprocess.check_call(
-            [
-                "systemctl",
-                "--user",
-                "enable",
-                "--now",
-                str(REPO_DIR / "bot.service"),
-                str(REPO_DIR / "gui.service"),
-            ]
-        )
+        subprocess.check_call([
+            "systemctl",
+            "--user",
+            "enable",
+            "--now",
+            str(REPO_DIR / "bot.service"),
+            str(REPO_DIR / "gui.service"),
+        ])
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("systemd not available or command failed. Start the scripts manually:")
         print(f"  {python_exe} bot.py")
@@ -113,7 +112,11 @@ WantedBy=default.target
         return
 
 
-def main():
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-services", action="store_true", help="skip systemd service creation")
+    args = parser.parse_args(argv)
+
     python_exe, pip_exe = create_venv()
     install_deps(pip_exe)
 
@@ -123,7 +126,8 @@ def main():
 
     write_env_file(env)
 
-    create_services(python_exe, env)
+    if not args.no_services:
+        create_services(python_exe, env)
     print("Setup complete.")
     print("Admin GUI available at http://localhost:8000")
 

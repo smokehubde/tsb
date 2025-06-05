@@ -1,11 +1,16 @@
+# -*- coding: utf-8 -*-
+"""Database models and application factory."""
+
+from __future__ import annotations
+
 import os
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
-from flask import Flask
 
 # Allow overriding the database via environment variable.
-# Falls back to the local SQLite file if not provided.
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///db.sqlite3")
+
 
 db = SQLAlchemy()
 SessionLocal = sessionmaker()
@@ -34,16 +39,8 @@ class ShippingCost(db.Model):
     cost = db.Column(db.Float)
 
 
-def get_secret_key():
-    """Return the Flask secret key.
-
-    The function first checks the ``SECRET_KEY`` environment variable. If it is
-    not set, it tries to read the value from the ``.env`` file whose location is
-    defined by the ``ENV_FILE`` environment variable (falling back to
-    ``./.env``). When the key is still missing a new random key is generated and
-    appended to the ``.env`` file so subsequent runs use the same value.
-    """
-
+def get_secret_key() -> str:
+    """Return the Flask secret key, creating one if necessary."""
     key = os.getenv("SECRET_KEY")
     if key:
         return key
@@ -65,15 +62,15 @@ def get_secret_key():
         with open(env_path, "a") as f:
             f.write(f"SECRET_KEY={key}\n")
     except OSError:
-        # If the file cannot be written we still return the generated key
         pass
     return key
 
 
-def create_app():
+def create_app() -> Flask:
+    """Create and configure the Flask application."""
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-    app.config['SECRET_KEY'] = get_secret_key()
+    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+    app.config["SECRET_KEY"] = get_secret_key()
     db.init_app(app)
     with app.app_context():
         db.create_all()
