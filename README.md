@@ -13,6 +13,8 @@ diese Einstellung für den Nutzer.
 * Produktverwaltung mit Name, Preis und Beschreibung.
 * Verwaltung von Versandkosten pro Land.
 * Nach Auswahl des Landes zeigt der Bot die Versandkosten an.
+=======
+
 * GUI läuft lokal auf Port 8000.
 * Neue Route `/tor` ermöglicht das Steuern des Tor-Dienstes über die
   Variablen `ENABLE_TOR`, `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` und
@@ -128,6 +130,8 @@ This project contains a simple Telegram bot and an admin interface for managing 
 * Manage products with name, price and description.
 * Manage shipping costs per country.
 * After selecting the country the bot shows the shipping fee.
+=======
+
 * The GUI runs locally on port 8000.
 * New `/tor` route allows controlling Tor using the `ENABLE_TOR`,
   `TOR_CONTROL_HOST`, `TOR_CONTROL_PORT` and `TOR_CONTROL_PASS`
