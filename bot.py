@@ -131,9 +131,21 @@ async def set_country(message: types.Message, state: FSMContext):
             session.add(user)
         else:
             user.country = country
+
+        lang = user.language or "en"
+        cost_entry = (
+            session.query(ShippingCost).filter_by(country=country).first()
+        )
+        shipping_cost = cost_entry.cost if cost_entry else None
+        session.commit()
+
+=======
         lang = user.language or 'en'
         session.commit()
+
     await state.clear()
+    if shipping_cost is not None:
+        await message.answer(f"Shipping to {country}: {shipping_cost} €")
     greeting = "W\u00e4hle ein Produkt" if lang == "de" else "Choose a product"
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
