@@ -120,9 +120,14 @@ def main(argv: list[str] | None = None) -> None:
     python_exe, pip_exe = create_venv()
     install_deps(pip_exe)
 
+    import bcrypt
+
     env = load_env_file()
-    for var in ["BOT_TOKEN", "ADMIN_USER", "ADMIN_PASS", "SECRET_KEY"]:
+    for var in ["BOT_TOKEN", "ADMIN_USER", "SECRET_KEY"]:
         env[var] = env.get(var) or prompt_env(var)
+    password = env.get("ADMIN_PASS") or prompt_env("ADMIN_PASS")
+    env["ADMIN_PASS_HASH"] = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    env.pop("ADMIN_PASS", None)
 
     write_env_file(env)
 
