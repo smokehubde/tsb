@@ -20,6 +20,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import bcrypt
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+from uuid import uuid4
 
 
 from config import load_env, setup_logging
@@ -33,6 +35,9 @@ ENV_FILE = os.getenv("ENV_FILE", os.path.join(os.path.dirname(__file__), ".env")
 load_env()
 app = create_app()
 logger = logging.getLogger(__name__)
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "images")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
     minutes=int(os.getenv("SESSION_TIMEOUT_MINUTES", "30"))
 )
@@ -130,7 +135,17 @@ def add_product():
         name = request.form["name"]
         price = float(request.form["price"])
         desc = request.form["description"]
-        db.session.add(Product(name=name, price=price, description=desc))
+        image = request.files.get("image")
+        image_path = None
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            unique = f"{uuid4().hex}_{filename}"
+            path = os.path.join(UPLOAD_FOLDER, unique)
+            image.save(path)
+            image_path = os.path.join("images", unique)
+        db.session.add(
+            Product(name=name, price=price, description=desc, image_path=image_path)
+        )
         db.session.commit()
         return redirect(url_for("product_list"))
     return render_template("add_product.html")
@@ -144,6 +159,13 @@ def edit_product(pid: int):
         product.name = request.form["name"]
         product.price = float(request.form["price"])
         product.description = request.form["description"]
+        image = request.files.get("image")
+        if image and image.filename:
+            filename = secure_filename(image.filename)
+            unique = f"{uuid4().hex}_{filename}"
+            path = os.path.join(UPLOAD_FOLDER, unique)
+            image.save(path)
+            product.image_path = os.path.join("images", unique)
         db.session.commit()
         return redirect(url_for("product_list"))
     return render_template("edit_product.html", p=product)

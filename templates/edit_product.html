@@ -1,4 +1,4 @@
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 =======
@@ -7,5 +7,7 @@
     <input name="name" value="{{ p.name }}">
     <input name="price" type="number" step="0.01" value="{{ p.price }}">
     <textarea name="description">{{ p.description }}</textarea>
+    {% if p.image_path %}<img src="{{ url_for('static', filename=p.image_path) }}" width="50">{% endif %}
+    <input type="file" name="image">
     <button type="submit">Save</button>
 </form>
