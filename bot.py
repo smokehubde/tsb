@@ -34,6 +34,13 @@ class CountryStates(StatesGroup):
 
 logger = logging.getLogger(__name__)
 
+# Translations used in the main menu
+GREETINGS = {
+    "de": "W\xe4hle ein Produkt",
+    "tr": "Bir \u00fcr\u00fcn se\u00e7",
+    "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
+}
+
 
 def get_bot_token() -> str:
     """Return the bot token from the environment."""
@@ -82,12 +89,7 @@ async def cmd_start(message: types.Message, state: FSMContext) -> None:
                 await state.set_state(CountryStates.choose)
                 return
 
-        greetings = {
-            "de": "W\xe4hle ein Produkt",
-            "tr": "Bir \u00fcr\u00fcn se\u00e7",
-            "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
-        }
-        greeting = greetings.get(user.language, "Choose a product")
+        greeting = GREETINGS.get(user.language, "Choose a product")
         await message.answer(greeting)
 
 
@@ -123,12 +125,7 @@ async def set_language(message: types.Message, state: FSMContext) -> None:
         await message.answer("Choose country", reply_markup=kb)
     else:
         await state.clear()
-        greetings = {
-            "de": "W\xe4hle ein Produkt",
-            "tr": "Bir \u00fcr\u00fcn se\u00e7",
-            "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
-        }
-        greeting = greetings.get(lang, "Choose a product")
+        greeting = GREETINGS.get(lang, "Choose a product")
         await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 
@@ -161,12 +158,7 @@ async def set_country(message: types.Message, state: FSMContext) -> None:
         else:
             cost_text = f"{shipping_cost} \u20ac"
         await message.answer(f"Shipping to {country}: {cost_text}")
-    greetings = {
-        "de": "W\xe4hle ein Produkt",
-        "tr": "Bir \u00fcr\u00fcn se\u00e7",
-        "ru": "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0442\u043e\u0432\u0430\u0440",
-    }
-    greeting = greetings.get(lang, "Choose a product")
+    greeting = GREETINGS.get(lang, "Choose a product")
     await message.answer(greeting, reply_markup=types.ReplyKeyboardRemove())
 
 

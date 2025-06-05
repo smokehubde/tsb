@@ -82,17 +82,29 @@ python3 admin_app.py
 Nach dem Start ist der Bot über Telegram erreichbar (Token per
 `BOT_TOKEN`-Umgebungsvariable setzen) und die Admin-GUI unter
 [http://localhost:8000](http://localhost:8000).
+Die Skripte schreiben Logdateien `bot.log` und `admin.log`, die bei Fehlern
+hilfreich sind.
 Nach dem Setup wird zudem eine Datei `onion_url.txt` mit der Tor-Adresse erzeugt,
 die im Terminal ausgegeben wird.
+
+### So prüfst du dein Setup
+
+Nach der Installation kannst du mit
+
+```bash
+pytest
+```
+
+sicherstellen, dass alle Tests erfolgreich durchlaufen.
 
 ## Umgebungsvariablen
 
 Die systemd-Dienste laden ihre Konfiguration aus der Datei `.env`. Sie muss
-die folgenden Variablen enthalten:
+die folgenden Variablen enthalten (eine Datei `.env.example` mit Musterwerten liegt bei):
 
 * `BOT_TOKEN` – Telegram-Token für den Bot
 * `ADMIN_USER` – Benutzername für das Admin-Login
-* `ADMIN_PASS` – Passwort für das Admin-Login
+* `ADMIN_PASS_HASH` – gehashter Passwort-Hash für den Admin-Login
 * `SECRET_KEY` – Flask-`SECRET_KEY` für die Web-Oberfläche
 * `DATABASE_URL` – optionale Datenbank-URL (Standard: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP für die Admin-GUI (Standard: `127.0.0.1`)
@@ -157,7 +169,7 @@ Python 3 is required. On some systems the executable is named `python3`.
    the required values:
    - `BOT_TOKEN` – your Telegram bot token
    - `ADMIN_USER` – admin username
-   - `ADMIN_PASS` – admin password (stored hashed)
+   - `ADMIN_PASS_HASH` – hashed admin password
    - `SECRET_KEY` – secret key for Flask
    - optional settings like database URL or webhook parameters
 
@@ -186,15 +198,27 @@ Python 3 is required. On some systems the executable is named `python3`.
    ```
 
 After starting, the bot is reachable via Telegram (set the token with the `BOT_TOKEN` environment variable) and the admin GUI is available at [http://localhost:8000](http://localhost:8000).
+Log files `bot.log` and `admin.log` are created to help with troubleshooting.
+
 The setup script also prints a Tor address stored in `onion_url.txt` to reach the GUI from anywhere.
+
+### Verify your setup
+
+After installing all requirements you can run
+
+```bash
+pytest
+```
+
+to ensure everything works as expected.
 
 ## Environment Variables
 
-The systemd services load their configuration from the `.env` file. It must contain the following variables:
+The systemd services load their configuration from the `.env` file. An example file `.env.example` is included. It must contain the following variables:
 
 * `BOT_TOKEN` – Telegram token for the bot
 * `ADMIN_USER` – Username for the admin login
-* `ADMIN_PASS` – Password for the admin login
+* `ADMIN_PASS_HASH` – hashed password for the admin login
 * `SECRET_KEY` – Flask `SECRET_KEY` for the web interface
 * `DATABASE_URL` – optional database URL (default: `sqlite:///db.sqlite3`)
 * `ADMIN_HOST` – Hostname/IP for the admin GUI (default: `127.0.0.1`)
